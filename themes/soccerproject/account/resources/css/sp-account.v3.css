@@ -1,0 +1,141 @@
+/* ============================================================
+   SoccerProject.com — Account Console v3 brand recolor
+   TARGET: Keycloak 26.7.1  ·  parent = keycloak.v3
+   ------------------------------------------------------------
+   The KC26 account console is React + PatternFly 5. It is rebranded
+   by overriding PatternFly CSS custom properties. PF5 names
+   (--pf-v5-*) are primary; the legacy PF4 names (--pf-global--*)
+   are kept so the same file still works on older Keycloak.
+   PF5 ships a native dark theme (html.pf-v5-theme-dark) — handled
+   at the bottom; the prefers-color-scheme block covers PF4.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow+Semi+Condensed:wght@400;500;600;700&display=swap');
+
+/* ---------- Brand palette (Heritage) ---------- */
+:root {
+  --sp-primary:        #2e7fd6;
+  --sp-primary-dark:   #2670c2;
+  --sp-primary-darker: #1f5ba3;
+  --sp-link:           #2670c2;
+  --sp-navy:           #06182f;
+
+  /* ---- PatternFly 4 globals (KC22 account v2) ---- */
+  --pf-global--primary-color--100: var(--sp-primary);
+  --pf-global--primary-color--200: var(--sp-primary-dark);
+  --pf-global--active-color--100:  var(--sp-primary);
+  --pf-global--active-color--200:  var(--sp-primary-dark);
+  --pf-global--link--Color:        var(--sp-link);
+  --pf-global--link--Color--hover: var(--sp-primary-darker);
+  --pf-global--BorderRadius--sm:   8px;
+  --pf-global--FontFamily--text:    'Barlow Semi Condensed', system-ui, sans-serif;
+  --pf-global--FontFamily--sans-serif: 'Barlow Semi Condensed', system-ui, sans-serif;
+  --pf-global--FontFamily--heading--sans-serif: 'Oswald', 'Arial Narrow', sans-serif;
+
+  /* ---- PatternFly 5 (KC 24/25/26 — primary) ---- */
+  --pf-v5-global--primary-color--100: var(--sp-primary);
+  --pf-v5-global--primary-color--200: var(--sp-primary-dark);
+  --pf-v5-global--active-color--100:  var(--sp-primary);
+  --pf-v5-global--active-color--200:  var(--sp-primary-dark);
+  --pf-v5-global--link--Color:        var(--sp-link);
+  --pf-v5-global--link--Color--hover: var(--sp-primary-darker);
+  --pf-v5-global--BorderRadius--sm:   8px;
+  --pf-v5-global--focus-color--100:   var(--sp-primary);
+  --pf-v5-global--FontFamily--text:    'Barlow Semi Condensed', system-ui, sans-serif;
+  --pf-v5-global--FontFamily--sans-serif: 'Barlow Semi Condensed', system-ui, sans-serif;
+  --pf-v5-global--FontFamily--heading--sans-serif: 'Oswald', 'Arial Narrow', sans-serif;
+}
+
+/* ============================================================
+   PatternFly 5 native dark theme (KC26 toggles html.pf-v5-theme-dark)
+   ============================================================ */
+html.pf-v5-theme-dark {
+  --pf-v5-global--link--Color:        #6fa8ec;
+  --pf-v5-global--link--Color--hover: #8fbef0;
+  --pf-v5-global--primary-color--100: #3c8fe6;
+  --pf-v5-global--primary-color--200: #2e7fd6;
+}
+html.pf-v5-theme-dark .pf-v5-c-button.pf-m-primary {
+  --pf-v5-c-button--m-primary--BackgroundColor: #3c8fe6;
+  --pf-v5-c-button--m-primary--hover--BackgroundColor: #2e7fd6;
+}
+
+/* ---------- Masthead → navy heritage banner ---------- */
+.pf-c-page__header,
+.pf-c-masthead,
+.pf-v5-c-masthead {
+  --pf-c-page__header--BackgroundColor: var(--sp-navy);
+  --pf-c-masthead--BackgroundColor: var(--sp-navy);
+  background-color: var(--sp-navy) !important;
+  background-image:
+    linear-gradient(115deg, #020a14, #06182f 46%, #1d4d7e),
+    repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 1px, transparent 1px 6px) !important;
+  color: #fff;
+}
+.pf-c-page__header a,
+.pf-c-page__header .pf-c-button { color: #fff; }
+.pf-c-brand, .pf-v5-c-brand { max-height: 34px; }
+
+/* ---------- Primary buttons ---------- */
+.pf-c-button.pf-m-primary,
+.pf-v5-c-button.pf-m-primary {
+  --pf-c-button--m-primary--BackgroundColor: var(--sp-primary);
+  --pf-c-button--m-primary--hover--BackgroundColor: var(--sp-primary-dark);
+  --pf-c-button--m-primary--active--BackgroundColor: var(--sp-primary-darker);
+  --pf-c-button--m-primary--focus--BackgroundColor: var(--sp-primary-dark);
+  font-family: 'Oswald', 'Arial Narrow', sans-serif;
+  letter-spacing: .03em;
+}
+
+/* ---------- Active nav item accent ---------- */
+.pf-c-nav__link.pf-m-current,
+.pf-c-nav__item.pf-m-current > .pf-c-nav__link {
+  --pf-c-nav__link--m-current--Color: var(--sp-primary);
+  box-shadow: inset 3px 0 0 var(--sp-primary);
+}
+
+/* ---------- Headings + focus tint ---------- */
+.pf-c-title { font-family: 'Oswald', 'Arial Narrow', sans-serif; letter-spacing: .01em; }
+:root { --pf-global--focus-color--100: var(--sp-primary); }
+
+/* ============================================================
+   DARK MODE — PatternFly 4 has no native dark theme, so we remap
+   the core surface/text variables when the OS asks for dark.
+   Best-effort: covers page, cards, forms, nav and borders.
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pf-global--BackgroundColor--100: #0e1c33;  /* cards / content */
+    --pf-global--BackgroundColor--200: #0a1830;  /* page */
+    --pf-global--BackgroundColor--300: #13243f;
+    --pf-global--BackgroundColor--light-100: #0e1c33;
+    --pf-global--BackgroundColor--light-200: #0a1830;
+    --pf-global--Color--100: #e8eef7;            /* primary text */
+    --pf-global--Color--200: #a4bad4;            /* secondary text */
+    --pf-global--Color--light-100: #ffffff;
+    --pf-global--BorderColor--100: rgba(255,255,255,.16);
+    --pf-global--BorderColor--200: rgba(255,255,255,.10);
+    --pf-global--link--Color: #6fa8ec;
+    --pf-global--link--Color--hover: #8fbef0;
+    --pf-global--primary-color--100: #3c8fe6;
+    color-scheme: dark;
+  }
+  body, .pf-c-page { background-color: #0a1830; color: #e8eef7; }
+  .pf-c-page__main-section,
+  .pf-c-page__sidebar { background-color: #0a1830; }
+  .pf-c-card {
+    --pf-c-card--BackgroundColor: #0e1c33;
+    background-color: #0e1c33;
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  .pf-c-form-control {
+    --pf-c-form-control--BackgroundColor: #0b1830;
+    --pf-c-form-control--BorderColor: rgba(255,255,255,.18);
+    --pf-c-form-control--Color: #e8eef7;
+    background-color: #0b1830;
+    color: #e8eef7;
+  }
+  .pf-c-nav__link { color: #a4bad4; }
+  .pf-c-nav__link:hover { color: #e8eef7; }
+  /* masthead already dark — keep it */
+}
