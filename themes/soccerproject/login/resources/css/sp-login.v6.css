@@ -1,0 +1,1510 @@
+/* ============================================================================
+   SoccerProject.com — Keycloak login theme  (issue frontend#725)
+   TARGET: Keycloak 26.7.1 (Quarkus)
+
+   The single source of truth for this file is the public landing page, not a
+   Keycloak-specific design system:
+
+     soccerproject-front/src/pages/landing/tokens.ts   (the pinned palette)
+     soccerproject-front/src/styles/landing.css        (type, pills, cards)
+     soccerproject-front/src/components/AppShell.tsx   (masthead + footer)
+
+   Every value under "Design tokens" below is copied from `tokens.ts`
+   verbatim. When the landing page's handoff changes, change it there first and
+   mirror it here — do not tune these by eye.
+
+   Two class families are styled here:
+     .sp-*  — our own shell, written by template.ftl / login.ftl / register.ftl
+     .kc-*  — the semantic class names theme.properties maps Keycloak's
+              `properties.kc*Class` hooks onto, so every *inherited* base page
+              (reset password, OTP, terms, update profile, ...) picks up the
+              same design without a template fork.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------- tokens -- */
+:root {
+  /* --- Pinned landing palette (soccerproject-front/src/pages/landing/tokens.ts).
+         The landing page renders pre-auth with no club and no user setting to
+         derive a theme from, so it does not read the app's brand directions.
+         These pages sit in the same pre-auth journey and follow the same rule:
+         the visitor who clicked "Start my club" must not see the colours change
+         under them. --- */
+  --sp-header-bg: #101822;
+  --sp-navy-start: #0b1b2e;
+  --sp-navy-end: #17457c;
+  --sp-hero-grad-top: #123253;
+  --sp-footer-bg: #08192b;
+  --sp-action-blue: #1d5fd0;
+  --sp-cta-gold: #e8b44a;
+  --sp-crest-gold: #c8a24c;
+  --sp-surface-light: #f7f8fa;
+  --sp-surface-white: #ffffff;
+  --sp-text-muted: #5b6673;
+  --sp-border: #e4e7eb;
+
+  /* Status inks. The landing page has no error state of its own, so these come
+     from the app's own light-mode tokens (`designThemeTokens.ts`) rather than
+     from a fresh guess — an invalid field here is the same red the manager
+     sees once they are inside. */
+  --sp-danger: #b93b32;
+  --sp-warn: #c26a12;
+  --sp-good: #1a8c58;
+
+  /* `.lp-page`'s stack, exactly. Deliberately the system UI font and not the
+     Oswald/Barlow pair the previous theme loaded from Google Fonts: the landing
+     page renders in this, so a webfont here would be the first thing that says
+     "different application" — and it would say it during a network round trip
+     on the slowest page of the funnel. */
+  --sp-font:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+
+  /* `.lp-feature-card` / `.lp-testimonial` are 8px; every control on the
+     landing page is a 999px pill (`.lp-cta`, `.lp-input`). */
+  --sp-radius: 8px;
+  --sp-radius-sm: 6px;
+  --sp-pill: 999px;
+
+  /* `.lp-cta` is 60px in the hero, 56px in the sections. Forms here stack more
+     fields than the landing page's single email box, so the control height is
+     the section size, not the hero one. */
+  --sp-control-h: 56px;
+
+  /* AppShell's masthead. */
+  --sp-header-h: 64px;
+
+  color-scheme: light;
+}
+
+/* ------------------------------------------------------------------ reset -- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: var(--sp-font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--sp-navy-start);
+  background: var(--sp-navy-start);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+}
+
+a {
+  color: var(--sp-action-blue);
+  text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
+}
+
+/* One ring everywhere, on the blue the landing page uses for every actionable
+   thing that is not the gold CTA. */
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--sp-action-blue), transparent 40%);
+  outline-offset: 2px;
+}
+
+.sp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------ shell -- */
+.sp-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  /* `.lp-hero`'s background, so the page the visitor lands on is painted with
+     the gradient they were looking at one click earlier. */
+  background: linear-gradient(
+    150deg,
+    var(--sp-hero-grad-top) 0%,
+    var(--sp-navy-start) 100%
+  );
+}
+
+/* ---- Environment banner (injected by template.ftl on non-production) ---- */
+.sp-env {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #2a1a00;
+  background: var(--sp-cta-gold);
+}
+
+.sp-env svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.sp-env[data-kind="local"],
+.sp-env[data-kind="dev"] {
+  color: var(--sp-surface-white);
+  background: var(--sp-action-blue);
+}
+
+.sp-env[data-kind="test"] {
+  color: var(--sp-surface-white);
+  background: var(--sp-danger);
+}
+
+/* --------------------------------------------------------------- masthead -- */
+/* AppShell's `.masthead`: 64px, `--lp-header-bg`, brand tile on the left,
+   controls on the right. Same composition, same sizes. */
+.sp-masthead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--sp-header-h);
+  padding: 0 18px 0 16px;
+  background: var(--sp-header-bg);
+  color: var(--sp-surface-white);
+}
+
+.sp-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex: none;
+  min-width: 0;
+  min-height: 44px;
+  padding-inline: 4px;
+  margin-inline: -4px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.sp-brand:hover,
+.sp-brand:focus-visible {
+  text-decoration: none;
+}
+
+/* The logo mark's own brand blue, fixed regardless of surface like a printed
+   logo would be — copied from `.brand-mark` in design.css. */
+.sp-brand__mark {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--sp-radius);
+  background: linear-gradient(150deg, #2f7ed4, #15497f);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 6px 16px rgba(3, 14, 30, 0.35);
+}
+
+.sp-brand__mark img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.sp-wordmark {
+  font-weight: 800;
+  font-size: 17.5px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.sp-wordmark .tld {
+  opacity: 0.5;
+  font-weight: 600;
+}
+
+.sp-masthead__spacer {
+  flex: 1 1 auto;
+}
+
+.sp-masthead__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------------------------------------------------------------- content -- */
+.sp-main {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Less block padding than the landing page's sections take (`.lp-page
+     section` is up to 88px): a section on a scrolling page is separated from
+     its neighbours, this one is the only thing between a 64px masthead and the
+     footer, and every pixel it takes is a pixel of the card below the fold.
+     The inline padding stays on the landing page's own scale. */
+  padding: clamp(24px, 3vw, 40px) clamp(20px, 5vw, 64px);
+}
+
+/* `.lp-hero`'s grid: copy left, panel right, 40px gutter. */
+.sp-layout {
+  width: 100%;
+  max-width: 1120px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 40px;
+  align-items: center;
+}
+
+/* ------------------------------------------------------------------- hero -- */
+.sp-hero {
+  color: var(--sp-surface-white);
+  min-width: 0;
+}
+
+/* `.lp-h1`. */
+.sp-hero__title {
+  font-size: clamp(38px, 5.6vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.018em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+/* `.lp-deck`. */
+.sp-hero__deck {
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 12px 0 0;
+}
+
+/* `.lp-hero .lp-body`. */
+.sp-hero__lead {
+  font-size: 17px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 14px 0 0;
+  max-width: 560px;
+}
+
+/* `.lp-hero-trust`. */
+.sp-trust {
+  list-style: none;
+  margin: 26px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sp-trust li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-trust svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--sp-cta-gold);
+}
+
+/* ------------------------------------------------------------------- card -- */
+.sp-card-col {
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* `.lp-feature-card`: white, 1px `--lp-border`, 8px radius. The elevation is
+   the one concession the landing page does not need — there the cards sit on
+   `--lp-surface-light`; this one floats on the hero gradient and needs to read
+   as lifted off it. */
+.sp-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--sp-surface-white);
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius);
+  padding: clamp(24px, 3.4vw, 34px);
+  box-shadow: 0 24px 60px rgba(4, 16, 34, 0.34);
+}
+
+.sp-card__head {
+  margin-bottom: 22px;
+}
+
+/* `.lp-h2`, one step down: this is a card title, not a section title. */
+.sp-card__title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.016em;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--sp-navy-start);
+}
+
+.sp-card__subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--sp-text-muted);
+}
+
+.sp-required-hint {
+  margin: 20px 0 10px;
+  font-size: 13px;
+  color: var(--sp-text-muted);
+}
+
+/* In the card head (inherited pages pass displayRequiredFields to the template)
+   it is a subtitle under the title instead, and takes that spacing. */
+.sp-card__head .sp-required-hint {
+  margin: 10px 0 0;
+}
+
+.required,
+.sp-required-hint .req {
+  color: var(--sp-danger);
+  font-weight: 700;
+}
+
+.sp-card__foot {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--sp-border);
+  font-size: 14px;
+  color: var(--sp-text-muted);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------ forms -- */
+.sp-field,
+.kc-field {
+  margin-bottom: 16px;
+  min-width: 0;
+}
+
+.sp-field > label,
+.kc-field label,
+.sp-label,
+.kc-label {
+  display: inline-block;
+  margin-bottom: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sp-navy-start);
+}
+
+/* The base user-profile macro wraps the label and the `*` in their own div;
+   ours is a bare label. Both have to sit on the same baseline. */
+.kc-label-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.kc-label-wrap label {
+  margin-bottom: 7px;
+}
+
+.kc-input-wrap {
+  min-width: 0;
+}
+
+/* `.lp-input`: pill, 1px `--lp-border`, white, 16px type, generous inline
+   padding. `--sp-control-h` is the section CTA height rather than the hero's
+   60px, because these forms stack up to four of them. */
+.sp-input,
+.kc-input,
+input.sp-input,
+select.kc-input,
+textarea.kc-textarea {
+  width: 100%;
+  height: var(--sp-control-h);
+  padding: 0 20px;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-pill);
+  background: var(--sp-surface-white);
+  color: var(--sp-navy-start);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  min-width: 0;
+  transition:
+    border-color 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+textarea.kc-textarea {
+  height: auto;
+  min-height: 110px;
+  padding: 14px 20px;
+  border-radius: var(--sp-radius);
+  resize: vertical;
+}
+
+select.kc-input {
+  padding-inline-end: 14px;
+  cursor: pointer;
+}
+
+.sp-input::placeholder,
+.kc-input::placeholder {
+  color: color-mix(in srgb, var(--sp-text-muted), transparent 30%);
+}
+
+.sp-input:hover,
+.kc-input:hover {
+  border-color: color-mix(in srgb, var(--sp-navy-start), transparent 72%);
+}
+
+.sp-input:focus,
+.kc-input:focus {
+  outline: none;
+  border-color: var(--sp-action-blue);
+  box-shadow: 0 0 0 3px rgba(29, 95, 208, 0.18);
+}
+
+.sp-input:disabled,
+.kc-input:disabled {
+  background: var(--sp-surface-light);
+  color: var(--sp-text-muted);
+  cursor: not-allowed;
+}
+
+/* Error state. The ring is the only thing that changes shape — the field keeps
+   its pill so a form in error still reads as the same form. */
+.sp-input.is-error,
+.sp-input[aria-invalid="true"],
+.kc-input[aria-invalid="true"],
+.kc-field-error-wrap .kc-input {
+  border-color: var(--sp-danger);
+}
+
+.sp-input.is-error:focus,
+.sp-input[aria-invalid="true"]:focus,
+.kc-input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px rgba(185, 59, 50, 0.18);
+}
+
+.sp-field-error,
+.kc-field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 7px;
+  padding-inline-start: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--sp-danger);
+}
+
+.sp-field-error svg,
+.kc-field-error svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  margin-top: 2px;
+}
+
+.kc-helper-before,
+.kc-helper-after {
+  margin-top: 6px;
+  padding-inline-start: 4px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--sp-text-muted);
+}
+
+.kc-helper-before {
+  margin: 0 0 7px;
+}
+
+/* ---- Password field: a pill with a reveal button parked inside it ---- */
+.sp-input-wrap,
+.kc-input-group {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+/* Room for the reveal button. Applied to the group, not to every input, so a
+   plain field keeps the landing page's own padding. */
+.sp-input-wrap:has(.sp-eye) .sp-input,
+.kc-input-group:has(.sp-eye) .kc-input,
+.kc-input-group:has(.sp-eye) .sp-input {
+  padding-inline-end: 52px;
+}
+
+.sp-eye {
+  position: absolute;
+  inset-inline-end: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--sp-pill);
+  background: transparent;
+  color: var(--sp-text-muted);
+  cursor: pointer;
+}
+
+.sp-eye:hover {
+  color: var(--sp-navy-start);
+  background: var(--sp-surface-light);
+}
+
+.sp-eye svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Our own forms draw both glyphs and swap them on `.is-revealed`, so the
+   reveal state costs no request and no icon font. */
+.sp-eye .icon-hide {
+  display: none;
+}
+
+.sp-eye.is-revealed .icon-show {
+  display: none;
+}
+
+.sp-eye.is-revealed .icon-hide {
+  display: block;
+}
+
+/* Keycloak's own `passwordVisibility.js` (base theme) swaps these two classes
+   on an <i> inside the button. It never loads PatternFly here, so the glyphs
+   are ours — masked so they inherit `currentColor` like the inline SVGs do. */
+.sp-eye-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 20px 20px;
+  mask-size: 20px 20px;
+}
+
+.sp-eye-icon--show {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+}
+
+.sp-eye-icon--hide {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3l18 18'/%3E%3Cpath d='M10.6 5.2A9.9 9.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.4 4.3'/%3E%3Cpath d='M6.2 6.6A17.6 17.6 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 4.2-.9'/%3E%3Cpath d='M9.9 9.9a3 3 0 0 0 4.2 4.2'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3l18 18'/%3E%3Cpath d='M10.6 5.2A9.9 9.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.4 4.3'/%3E%3Cpath d='M6.2 6.6A17.6 17.6 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 4.2-.9'/%3E%3Cpath d='M9.9 9.9a3 3 0 0 0 4.2 4.2'/%3E%3C/svg%3E");
+}
+
+/* ---- Options row: remember me on the left, forgot password on the right ---- */
+.sp-row,
+.kc-form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 4px 0 20px;
+  font-size: 14px;
+}
+
+.kc-form-options:empty {
+  display: none;
+}
+
+.sp-check,
+.kc-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+  color: var(--sp-navy-start);
+  cursor: pointer;
+}
+
+.sp-check input,
+.kc-checkbox-input,
+.kc-check-input {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  accent-color: var(--sp-action-blue);
+  cursor: pointer;
+}
+
+.kc-radio,
+.kc-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+}
+
+.kc-radio-input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--sp-action-blue);
+}
+
+.kc-radio-label,
+.kc-checkbox-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--sp-navy-start);
+  cursor: pointer;
+}
+
+.kc-label-disabled {
+  color: var(--sp-text-muted);
+  cursor: not-allowed;
+}
+
+.sp-link,
+.kc-link {
+  font-weight: 600;
+  color: var(--sp-action-blue);
+}
+
+/* ---------------------------------------------------------------- buttons -- */
+/* `.lp-cta`: gold pill, navy ink, 700, no border. The primary action on these
+   pages is the same button as the primary action on the landing page. */
+.sp-btn,
+.kc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--sp-control-h);
+  padding: 0 30px;
+  border: 1px solid transparent;
+  border-radius: var(--sp-pill);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    filter 0.14s ease,
+    background-color 0.14s ease,
+    border-color 0.14s ease;
+}
+
+.sp-btn:hover,
+.kc-btn:hover {
+  text-decoration: none;
+}
+
+.sp-btn--block,
+.kc-btn--block {
+  width: 100%;
+}
+
+.sp-btn--primary,
+.kc-btn--primary {
+  background: var(--sp-cta-gold);
+  color: var(--sp-navy-start);
+}
+
+.sp-btn--primary:hover,
+.kc-btn--primary:hover {
+  filter: brightness(1.04);
+}
+
+.sp-btn--primary:active,
+.kc-btn--primary:active {
+  filter: brightness(0.97);
+}
+
+/* Secondary: outlined navy, never a second filled button. The gold has to stay
+   the only thing on the card that looks like the way forward. */
+.sp-btn--secondary,
+.kc-btn--secondary,
+.kc-btn--default {
+  background: var(--sp-surface-white);
+  border-color: var(--sp-border);
+  color: var(--sp-navy-start);
+}
+
+.sp-btn--secondary:hover,
+.kc-btn--secondary:hover,
+.kc-btn--default:hover {
+  background: var(--sp-surface-light);
+  border-color: color-mix(in srgb, var(--sp-navy-start), transparent 72%);
+}
+
+.sp-btn[disabled],
+.kc-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sp-linkbtn,
+.kc-btn--link {
+  height: auto;
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sp-action-blue);
+  cursor: pointer;
+}
+
+.sp-linkbtn:hover,
+.kc-btn--link:hover {
+  text-decoration: underline;
+}
+
+.kc-form-buttons {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kc-form-buttons-wrap {
+  display: contents;
+}
+
+/* Base pages put a bare <input type=submit>/<a> through the button classes;
+   both have to end up the same shape as our <button>. */
+input.kc-btn {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.sp-try-another {
+  margin-top: 14px;
+  text-align: center;
+}
+
+/* --------------------------------------------------- identity providers -- */
+/* "or" rule. The visual weight sits on the line, not the word: choosing a
+   social button is the same decision as filling the form, not a lesser one. */
+.sp-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--sp-text-muted);
+}
+
+.sp-or::before,
+.sp-or::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--sp-border);
+}
+
+.sp-social,
+.kc-social-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+/* Two abreast once there are more than two providers, so a realm with Google,
+   Facebook, Apple and Microsoft does not push the form off the fold. */
+.sp-social--grid,
+.kc-social-list--grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.sp-social a,
+.sp-social button,
+.kc-social-list a,
+.kc-social-list button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: var(--sp-control-h);
+  padding: 0 18px;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-pill);
+  background: var(--sp-surface-white);
+  color: var(--sp-navy-start);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.14s ease,
+    border-color 0.14s ease;
+}
+
+.sp-social a:hover,
+.sp-social button:hover,
+.kc-social-list a:hover,
+.kc-social-list button:hover {
+  background: var(--sp-surface-light);
+  border-color: color-mix(in srgb, var(--sp-navy-start), transparent 72%);
+  text-decoration: none;
+}
+
+.sp-social__icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  display: block;
+}
+
+.sp-social__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* zocial/PatternFly icon classes from the realm's IdP config. We render our own
+   SVG for the providers we know, and there is no icon font here, so an <i> that
+   slipped through must not leave a phantom gap. */
+.sp-social i,
+.kc-social-list i {
+  display: none;
+}
+
+/* The register page's provider list, which sits above the form rather than
+   under it, and the reassurance line under its submit button. */
+.sp-social--lead {
+  margin-top: 20px;
+}
+
+.sp-reassure {
+  margin: 16px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--sp-text-muted);
+}
+
+/* ------------------------------------------------------------- signup info -- */
+/* The "two ways in" panel. Quiet surface, not an alert: it is orientation for a
+   first-time visitor, and an amber/blue box here would compete with the real
+   error states directly above it. */
+.sp-ways {
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius);
+  background: var(--sp-surface-light);
+}
+
+.sp-ways__title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sp-navy-start);
+}
+
+.sp-ways__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.sp-ways__list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--sp-text-muted);
+}
+
+.sp-ways__list svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-top: 2px;
+  color: var(--sp-action-blue);
+}
+
+/* ----------------------------------------------------------------- alerts -- */
+/* Tinted card in the status ink, matching the app's own alert weight: a 3px
+   leading edge and a tinted ground, not a full-bleed colour block. */
+.sp-alert,
+.kc-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 13px 15px;
+  border: 1px solid;
+  border-radius: var(--sp-radius);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.sp-alert svg,
+.kc-alert svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 1px;
+}
+
+.sp-alert--error,
+.kc-alert--error {
+  color: #6d211b;
+  background: rgba(185, 59, 50, 0.09);
+  border-color: rgba(185, 59, 50, 0.32);
+}
+
+.sp-alert--error svg {
+  color: var(--sp-danger);
+}
+
+.sp-alert--warning,
+.kc-alert--warning {
+  color: #6b3a07;
+  background: rgba(194, 106, 18, 0.1);
+  border-color: rgba(194, 106, 18, 0.32);
+}
+
+.sp-alert--warning svg {
+  color: var(--sp-warn);
+}
+
+.sp-alert--success,
+.kc-alert--success {
+  color: #0e4b30;
+  background: rgba(26, 140, 88, 0.1);
+  border-color: rgba(26, 140, 88, 0.32);
+}
+
+.sp-alert--success svg {
+  color: var(--sp-good);
+}
+
+.sp-alert--info,
+.kc-alert--info {
+  color: #113a71;
+  background: rgba(29, 95, 208, 0.08);
+  border-color: rgba(29, 95, 208, 0.28);
+}
+
+.sp-alert--info svg {
+  color: var(--sp-action-blue);
+}
+
+.kc-alert-title {
+  font-weight: 700;
+}
+
+/* ---- Attempted username + restart flow ---- */
+.sp-attempted {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 20px;
+  padding: 11px 15px;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius);
+  background: var(--sp-surface-light);
+  font-size: 14px;
+}
+
+.sp-attempted__user {
+  font-weight: 700;
+  color: var(--sp-navy-start);
+  overflow-wrap: anywhere;
+}
+
+.sp-attempted a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.sp-attempted svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ---------------------------------------------- language + header controls -- */
+.sp-lang {
+  position: relative;
+}
+
+/* Ghost control on the masthead, outlined against its own hairline — the same
+   treatment `.lp-shell .masthead .btn-ghost` gets on the landing page. */
+.sp-lang__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--sp-pill);
+  background: transparent;
+  color: var(--sp-surface-white);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sp-lang__btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+.sp-lang__btn .globe {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+
+.sp-lang__btn .chev {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  opacity: 0.75;
+  transition: transform 0.15s ease;
+}
+
+.sp-lang.is-open .sp-lang__btn .chev {
+  transform: rotate(180deg);
+}
+
+.sp-lang__cur {
+  max-width: 12ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sp-lang__menu {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 8px);
+  z-index: 60;
+  display: none;
+  min-width: 216px;
+  /* 30 locales is a scroller, not a wall of links. */
+  max-height: min(62vh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius);
+  background: var(--sp-surface-white);
+  box-shadow: 0 20px 46px rgba(4, 16, 34, 0.34);
+}
+
+.sp-lang.is-open .sp-lang__menu {
+  display: block;
+}
+
+.sp-lang__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: var(--sp-radius-sm);
+  color: var(--sp-navy-start);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.sp-lang__item:hover,
+.sp-lang__item:focus-visible {
+  background: var(--sp-surface-light);
+  text-decoration: none;
+}
+
+.sp-lang__item.is-current {
+  font-weight: 700;
+  color: var(--sp-action-blue);
+}
+
+.sp-lang__item .tick {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  opacity: 0;
+}
+
+.sp-lang__item.is-current .tick {
+  opacity: 1;
+}
+
+/* The base template's own locale markup (inherited pages that render
+   `kcLocale*`), so a page we have not overridden still gets a usable picker. */
+.kc-locale {
+  position: relative;
+}
+
+.kc-locale-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 6px;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius);
+  background: var(--sp-surface-white);
+}
+
+.kc-locale-item a {
+  display: block;
+  padding: 8px 11px;
+  border-radius: var(--sp-radius-sm);
+  color: var(--sp-navy-start);
+}
+
+/* ----------------------------------------------------------------- footer -- */
+/* `.lp-shell-footer`: in the flow, `--lp-footer-bg`, small semibold links. */
+.sp-footer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  background: var(--sp-footer-bg);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sp-footer a {
+  color: inherit;
+}
+
+.sp-footer a:hover {
+  color: var(--sp-surface-white);
+}
+
+.sp-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  justify-content: flex-end;
+}
+
+/* --------------------------------------------- inherited-page containers -- */
+/* Pages we have not overridden render their own wrappers inside our card. They
+   must not add a second box around it. */
+.kc-form,
+.kc-content-wrap,
+.kc-form-card,
+.kc-login,
+.kc-header,
+.kc-header-wrap,
+.kc-form-setting,
+.kc-info-wrap,
+.kc-social-section {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.kc-mt {
+  margin-top: 18px;
+}
+
+.kc-signup {
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--sp-text-muted);
+  text-align: center;
+}
+
+/* ---- select-authenticator / OTP credential list ---- */
+.kc-select-auth-list,
+.kc-otp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+/* select-authenticator renders each choice as a <button>, not a link, so the
+   UA font and the button reset both have to be undone here or the list comes
+   out in the browser default face. */
+.kc-select-auth-item,
+.kc-otp-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius);
+  background: var(--sp-surface-white);
+  color: var(--sp-navy-start);
+  font-family: inherit;
+  font-size: 15px;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.kc-select-auth-item:hover,
+.kc-otp-item:hover {
+  background: var(--sp-surface-light);
+  border-color: color-mix(in srgb, var(--sp-navy-start), transparent 72%);
+  text-decoration: none;
+}
+
+.kc-select-auth-heading,
+.kc-otp-item-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.kc-select-auth-desc {
+  font-size: 13px;
+  color: var(--sp-text-muted);
+}
+
+.kc-select-auth-fill {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.kc-select-auth-arrow {
+  flex: none;
+  color: var(--sp-text-muted);
+}
+
+/* The base template puts an empty <i> here for a PatternFly chevron glyph. No
+   icon font is loaded, so it is drawn with a mask like the reveal icons are. */
+.kc-select-auth-arrow-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E")
+    center / 16px 16px no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E")
+    center / 16px 16px no-repeat;
+}
+
+/* Mirrored for right-to-left locales (ar/fa are not in `locales=` today, but
+   the template already emits dir="rtl" when the realm turns one on). */
+[dir="rtl"] .kc-select-auth-arrow-icon {
+  transform: scaleX(-1);
+}
+
+.kc-select-auth-icon:empty,
+.kc-otp-item-icon:empty {
+  display: none;
+}
+
+/* ---- recovery codes ---- */
+.kc-recovery-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 18px;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius);
+  background: var(--sp-surface-light);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+}
+
+.kc-recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.kc-recovery-warning {
+  margin-bottom: 16px;
+}
+
+/* ================================================================ responsive */
+/* The hero column is copy, not content the visitor came for: below the landing
+   page's own 880px breakpoint the card takes the page and the hero shrinks to
+   its two headline decks, so the first field stays above the fold on a phone. */
+@media (max-width: 980px) {
+  .sp-layout {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+    gap: 28px;
+  }
+
+  .sp-hero {
+    text-align: center;
+  }
+
+  .sp-hero__lead,
+  .sp-trust {
+    display: none;
+  }
+
+  .sp-hero__title {
+    font-size: clamp(30px, 8vw, 40px);
+  }
+
+  .sp-hero__deck {
+    font-size: clamp(17px, 4.4vw, 20px);
+  }
+
+  .sp-card-col {
+    justify-content: stretch;
+  }
+
+  .sp-card {
+    max-width: none;
+  }
+}
+
+@media (max-width: 560px) {
+  :root {
+    --sp-control-h: 52px;
+    --sp-header-h: 56px;
+  }
+
+  .sp-main {
+    padding: 20px 16px 28px;
+  }
+
+  .sp-masthead {
+    padding: 0 12px;
+    gap: 10px;
+  }
+
+  .sp-card {
+    padding: 22px 18px;
+    border-radius: var(--sp-radius);
+  }
+
+  .sp-social--grid,
+  .kc-social-list--grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sp-footer {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .sp-footer__links {
+    justify-content: center;
+  }
+
+  .sp-lang__cur {
+    display: none;
+  }
+
+  .sp-lang__btn {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .sp-lang__btn .chev {
+    display: none;
+  }
+
+  .kc-recovery-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Very short viewports (a phone in landscape, a browser with three toolbars):
+   centring the card leaves it clipped with no way to reach the button. */
+@media (max-height: 720px) {
+  .sp-main {
+    align-items: flex-start;
+  }
+}
+
+/* Honour the OS setting for people who ask for less motion; there is little to
+   suppress here beyond the dropdown chevron, but the rule costs nothing. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Print: a login page is not printed on purpose, but a saved PDF of an error or
+   info page should be readable. */
+@media print {
+  .sp-shell {
+    background: none;
+  }
+
+  .sp-masthead,
+  .sp-footer,
+  .sp-hero,
+  .sp-env {
+    display: none;
+  }
+
+  .sp-card {
+    box-shadow: none;
+    max-width: none;
+  }
+}

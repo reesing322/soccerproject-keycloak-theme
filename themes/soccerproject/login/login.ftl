@@ -1,9 +1,16 @@
 <#--
   SoccerProject.com — sign-in page.  TARGET: Keycloak 26.7.1
   Section contract for KC26: header | form | socialProviders | info
+
+  Only the presentation differs from the base page: the same form fields, the
+  same names, the same `url.loginAction`, the same `messagesPerField` checks and
+  the same tab order.
 -->
 <#import "template.ftl" as layout>
-<@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=realm.password && realm.registrationAllowed && !registrationDisabled??; section>
+<#import "idp-commons.ftl" as idp>
+<#assign spHasSocial = realm.password && social?? && social.providers?? && social.providers?has_content>
+<#assign spCanRegister = realm.password && realm.registrationAllowed && !registrationDisabled??>
+<@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=spCanRegister; section>
 
     <#-- ===== Card heading ===== -->
     <#if section = "header">
@@ -23,15 +30,16 @@
                             <#else>${msg("email")}</#if>
                         </label>
                         <div class="sp-input-wrap">
-                            <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="8" r="4"/></svg>
                             <input tabindex="1" id="username" class="sp-input <#if messagesPerField.existsError('username','password')>is-error</#if>"
-                                   name="username" value="${(login.username!'')}" type="text"
+                                   name="username" value="${(login.username!'')}"
+                                   type="<#if realm.loginWithEmailAllowed && realm.registrationEmailAsUsername>email<#else>text</#if>"
                                    autofocus autocomplete="username" dir="ltr"
-                                   aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>"/>
+                                   <#if messagesPerField.existsError('username','password')>aria-invalid="true"</#if>/>
                         </div>
                         <#if messagesPerField.existsError('username','password')>
                             <span id="input-error" class="sp-field-error" aria-live="polite">
-                                ${kcSanitize(messagesPerField.getFirstError('username','password'))?no_esc}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
+                                <span>${kcSanitize(messagesPerField.getFirstError('username','password'))?no_esc}</span>
                             </span>
                         </#if>
                     </div>
@@ -40,18 +48,20 @@
                 <div class="sp-field">
                     <label for="password">${msg("password")}</label>
                     <div class="sp-input-wrap">
-                        <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
                         <input tabindex="2" id="password" class="sp-input <#if messagesPerField.existsError('username','password')>is-error</#if>"
                                name="password" type="password" autocomplete="current-password" dir="ltr"
-                               aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>"/>
+                               <#if messagesPerField.existsError('username','password')>aria-invalid="true"</#if>/>
                         <button type="button" class="sp-eye" data-sp-eye="password"
-                                aria-label="${msg("spShowPassword")}" aria-controls="password">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                                aria-label="${msg("showPassword")}" aria-controls="password"
+                                data-label-show="${msg("showPassword")}" data-label-hide="${msg("hidePassword")}">
+                            <svg class="icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.2A9.9 9.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.4 4.3"/><path d="M6.2 6.6A17.6 17.6 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 4.2-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
                         </button>
                     </div>
                     <#if usernameHidden?? && messagesPerField.existsError('username','password')>
                         <span id="input-error" class="sp-field-error" aria-live="polite">
-                            ${kcSanitize(messagesPerField.getFirstError('username','password'))?no_esc}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
+                            <span>${kcSanitize(messagesPerField.getFirstError('username','password'))?no_esc}</span>
                         </span>
                     </#if>
                 </div>
@@ -71,7 +81,7 @@
                 </div>
 
                 <input type="hidden" id="id-hidden-input" name="credentialId" <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
-                <button tabindex="4" class="sp-btn sp-btn--primary" name="login" id="kc-login" type="submit">${msg("doLogIn")}</button>
+                <button tabindex="4" class="sp-btn sp-btn--primary sp-btn--block" name="login" id="kc-login" type="submit">${msg("doLogIn")}</button>
             </form>
         </#if>
       </div>
@@ -79,23 +89,22 @@
 
     <#-- ===== Identity providers (own section since KC25) ===== -->
     <#elseif section = "socialProviders">
-        <#if realm.password && social?? && social.providers?? && social.providers?has_content>
-            <div id="kc-social-providers">
-                <div class="sp-or">${msg("identity-provider-login-label")}</div>
-                <div class="sp-social">
-                    <#list social.providers as p>
-                        <a id="social-${p.alias}" href="${p.loginUrl}" type="button">
-                            <#if p.iconClasses?has_content><i class="${p.iconClasses}" aria-hidden="true"></i></#if>
-                            <span>${p.displayName!}</span>
-                        </a>
-                    </#list>
-                </div>
-            </div>
+        <#if spHasSocial>
+            <@idp.idpButtons providers=social.providers/>
+        </#if>
+
+        <#-- The "two ways in" panel sits with the buttons rather than in the
+             card footer: it is the sentence that explains what the buttons
+             above it mean, and a first-time visitor reads it before deciding
+             whether to look for a "create account" link at all. Only shown
+             when the realm can actually take a registration. -->
+        <#if spCanRegister>
+            <@idp.waysIn hasSocial=spHasSocial/>
         </#if>
 
     <#-- ===== Registration link (footer) ===== -->
     <#elseif section = "info">
-        <#if realm.password && realm.registrationAllowed && !registrationDisabled??>
+        <#if spCanRegister>
             <div id="kc-registration">
                 ${msg("noAccount")} <a tabindex="6" class="sp-link" href="${url.registrationUrl}">${msg("doRegister")}</a>
             </div>
