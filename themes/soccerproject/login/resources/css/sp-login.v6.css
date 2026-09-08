@@ -374,7 +374,7 @@ a:focus-visible {
 }
 
 .sp-card__subtitle {
-  margin: 8px 0 0;
+  margin: 8px 0 18px;
   font-size: 14px;
   line-height: 1.6;
   color: var(--sp-text-muted);
