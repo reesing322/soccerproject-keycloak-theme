@@ -34,9 +34,11 @@ never chosen one; these pages are the same pre-auth journey and follow the same
 rule. A visitor who pressed a gold button on a navy gradient must not land on a
 differently-coloured page.
 
-## Only two templates are forked
+## Only three templates are forked
 
-`login.ftl` and `register.ftl`. Every other auth page is Keycloak's own base
+`login.ftl`, `register.ftl` and `login-reset-password.ftl` — the last one only
+because the base page renders its instruction *below* the submit button it is
+meant to introduce (frontend#736). Every other auth page is Keycloak's own base
 template, picking up this design through the `properties.kc*Class` hooks that
 `login/theme.properties` maps onto our class names. That is the supported
 theming mechanism, and it means a Keycloak upgrade cannot leave a page we forgot
@@ -48,10 +50,21 @@ ways in" panel.
 
 ## Languages
 
-30 locales, listed in `login/theme.properties`. Every one has a **complete** base
-message bundle in Keycloak 26.7.1, so no page comes out half-English: our own
-strings are translated in `login/messages/`, everything else is Keycloak's own
-translation.
+**Two are offered: English and Dutch.** Cut back from 30 in frontend#735 —
+the application ships only those two (`src/i18n/locales.ts`), so the other 28
+signed a manager in to auth pages in their own language and then dropped them
+into an English app.
+
+The 28 bundles are still here and still generated; nothing was thrown away.
+Turning one back on is two edits and no translation work — its code in
+`login/theme.properties` and in the realm's `supportedLocales` — and every one
+of them has a **complete** base bundle in Keycloak 26.7.1, so no page comes out
+half-English when it is switched on: our own strings live in `login/messages/`,
+everything else is Keycloak's own translation. The full set is listed in a
+comment next to `locales=`.
+
+The obvious next step is to enable them in step with the app's own switcher, one
+language at a time, rather than all at once.
 
 Two things have to agree for the picker to appear at all:
 
@@ -68,12 +81,36 @@ SP_MESSAGES_DIR=themes/soccerproject/login/messages python3 tools/gen_messages.p
 The generator refuses an ASCII apostrophe in any value: Keycloak runs every
 `msg()` through `java.text.MessageFormat`, which would eat it. Use `’`.
 
+It has two sections besides the per-locale copy. `ALIASES` gives a Keycloak key
+one of our values in every language — `termsTitle` takes the footer's wording so
+the terms page and the link to it agree. `EN_ONLY` overrides Keycloak's own
+**English** strings and nothing else: its English bundle is title case in places
+("Forgot Your Password?", "Try Another Way") where our copy is sentence case,
+but its other bundles are not — the Dutch is already "Bent u uw wachtwoord
+vergeten?". Overriding all 30 to fix an English fault would replace correct
+translations, in each language's own capitalisation conventions, with ours.
+
 ## Reviewing a change without a running Keycloak
 
 `tools/render/` renders every page against a mock of Keycloak's model and writes
-the HTML to `preview/`. Open `preview/index.html`. See `tools/render/README.md`
-for how to run it — and run it after any Keycloak upgrade, since it is what
-catches a macro contract or a `properties.kc*` hook that moved.
+the HTML to `preview/`, which is **not** committed (see `.gitignore`) — it is
+build output, and 70-odd HTML files would churn on every CSS or copy change.
+Produce it with the command in `tools/render/README.md`, then open
+`preview/index.html`.
+
+Run it after any Keycloak upgrade: it is what catches a macro contract or a
+`properties.kc*` hook that moved, and it renders the awkward states as well as
+the happy ones — a form redisplayed after a validation error, a realm with no
+identity providers, a `login_hint` that is a handle rather than an address.
+
+The register form's fields are **not** listed anywhere in this repo. They come
+from the realm's declarative user profile
+(`soccerproject-keycloak-config/soccerproject-realm.json`), which `register.ftl`
+renders through Keycloak's own `userProfileFormFields` macro. To change which
+fields a new manager is asked for, change the realm — and note that
+keycloak-config-cli only applies that block when the realm also sets
+`attributes.userProfileEnabled`, silently keeping Keycloak's built-in default
+profile (username, email, firstName, lastName) when it does not.
 
 ## Cache busting
 

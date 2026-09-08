@@ -30,7 +30,7 @@
                             <#else>${msg("email")}</#if>
                         </label>
                         <div class="sp-input-wrap">
-                            <input tabindex="1" id="username" class="sp-input <#if messagesPerField.existsError('username','password')>is-error</#if>"
+                            <input id="username" class="sp-input <#if messagesPerField.existsError('username','password')>is-error</#if>"
                                    name="username" value="${(login.username!'')}"
                                    type="<#if realm.loginWithEmailAllowed && realm.registrationEmailAsUsername>email<#else>text</#if>"
                                    autofocus autocomplete="username" dir="ltr"
@@ -48,7 +48,7 @@
                 <div class="sp-field">
                     <label for="password">${msg("password")}</label>
                     <div class="sp-input-wrap">
-                        <input tabindex="2" id="password" class="sp-input <#if messagesPerField.existsError('username','password')>is-error</#if>"
+                        <input id="password" class="sp-input <#if messagesPerField.existsError('username','password')>is-error</#if>"
                                name="password" type="password" autocomplete="current-password" dir="ltr"
                                <#if messagesPerField.existsError('username','password')>aria-invalid="true"</#if>/>
                         <button type="button" class="sp-eye" data-sp-eye="password"
@@ -69,19 +69,19 @@
                 <div class="sp-row">
                     <#if realm.rememberMe && !usernameHidden??>
                         <label class="sp-check">
-                            <input tabindex="3" id="rememberMe" name="rememberMe" type="checkbox" <#if login.rememberMe??>checked</#if>>
+                            <input id="rememberMe" name="rememberMe" type="checkbox" <#if login.rememberMe??>checked</#if>>
                             <span>${msg("rememberMe")}</span>
                         </label>
                     <#else>
                         <span></span>
                     </#if>
                     <#if realm.resetPasswordAllowed>
-                        <a tabindex="5" class="sp-link" href="${url.loginResetCredentialsUrl}">${msg("doForgotPassword")}</a>
+                        <a class="sp-link" href="${url.loginResetCredentialsUrl}">${msg("doForgotPassword")}</a>
                     </#if>
                 </div>
 
                 <input type="hidden" id="id-hidden-input" name="credentialId" <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
-                <button tabindex="4" class="sp-btn sp-btn--primary sp-btn--block" name="login" id="kc-login" type="submit">${msg("doLogIn")}</button>
+                <button class="sp-btn sp-btn--primary sp-btn--block" name="login" id="kc-login" type="submit">${msg("doLogIn")}</button>
             </form>
         </#if>
       </div>
@@ -106,7 +106,7 @@
     <#elseif section = "info">
         <#if spCanRegister>
             <div id="kc-registration">
-                ${msg("noAccount")} <a tabindex="6" class="sp-link" href="${url.registrationUrl}">${msg("doRegister")}</a>
+                ${msg("noAccount")} <a class="sp-link" href="${url.registrationUrl}">${msg("doRegister")}</a>
             </div>
         </#if>
     </#if>
