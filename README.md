@@ -93,9 +93,15 @@ translations, in each language's own capitalisation conventions, with ours.
 ## Reviewing a change without a running Keycloak
 
 `tools/render/` renders every page against a mock of Keycloak's model and writes
-the HTML to `preview/`. Open `preview/index.html`. See `tools/render/README.md`
-for how to run it — and run it after any Keycloak upgrade, since it is what
-catches a macro contract or a `properties.kc*` hook that moved.
+the HTML to `preview/`, which is **not** committed (see `.gitignore`) — it is
+build output, and 70-odd HTML files would churn on every CSS or copy change.
+Produce it with the command in `tools/render/README.md`, then open
+`preview/index.html`.
+
+Run it after any Keycloak upgrade: it is what catches a macro contract or a
+`properties.kc*` hook that moved, and it renders the awkward states as well as
+the happy ones — a form redisplayed after a validation error, a realm with no
+identity providers, a `login_hint` that is a handle rather than an address.
 
 The register form's fields are **not** listed anywhere in this repo. They come
 from the realm's declarative user profile
