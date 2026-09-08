@@ -1392,6 +1392,21 @@ input.kc-btn {
 /* The hero column is copy, not content the visitor came for: below the landing
    page's own 880px breakpoint the card takes the page and the hero shrinks to
    its two headline decks, so the first field stays above the fold on a phone. */
+/* Below this width the two columns stack, and that is the moment the hero stops
+   being free: beside the card it occupies space the card was never going to
+   use, above it every pixel pushes the form down. So it goes at exactly the
+   breakpoint where it changes from one to the other, rather than at a separate
+   width (frontend#737).
+
+   It used to shrink here instead — lead and trust row hidden, the two headline
+   decks kept — which still cost 91px of hero plus a 28px gap before the card
+   began, and put a 768px tablet 81px over its own viewport.
+
+   The brand line goes; the brand does not. The masthead carries the puppet mark
+   and the SoccerProject.com wordmark on every viewport, so a visitor arriving
+   from the landing page still lands somewhere that looks like where they came
+   from — and by this point they have already clicked "Start my club" or "Log
+   in", so the copy has done its work. */
 @media (max-width: 980px) {
   .sp-layout {
     grid-template-columns: 1fr;
@@ -1400,20 +1415,7 @@ input.kc-btn {
   }
 
   .sp-hero {
-    text-align: center;
-  }
-
-  .sp-hero__lead,
-  .sp-trust {
     display: none;
-  }
-
-  .sp-hero__title {
-    font-size: clamp(30px, 8vw, 40px);
-  }
-
-  .sp-hero__deck {
-    font-size: clamp(17px, 4.4vw, 20px);
   }
 
   .sp-card-col {
@@ -1549,14 +1551,6 @@ input.kc-btn {
 
   .kc-form-buttons {
     margin-top: 16px;
-  }
-
-  /* The hero is the left column on a wide screen, so it costs no vertical space
-     there; below the stacking breakpoint it is above the card and every pixel
-     of it pushes the form down. Its lead and trust row are already hidden at
-     980px — this trims what is left of the gap. */
-  .sp-layout {
-    gap: 20px;
   }
 }
 
