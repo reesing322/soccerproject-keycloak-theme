@@ -31,7 +31,17 @@
 <html lang="${(locale.currentLanguageTag)!'en'}" data-env="${properties.environment!''}"<#if realm.internationalizationEnabled> dir="${((locale.rtl)!false)?then('rtl','ltr')}"</#if>>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <#-- `interactive-widget=resizes-content` (frontend#737): by default a virtual
+       keyboard shrinks only the VISUAL viewport, so the page keeps its full
+       layout height behind the keyboard and the browser has to scroll within it
+       to keep a focused field in view -- with ~400px left on a phone, the submit
+       button ends up 161px below the fold. `resizes-content` shrinks the layout
+       viewport instead, which `.sp-shell`'s `100dvh` already tracks, so the page
+       reflows into what is actually visible.
+       No `viewport-fit=cover`: that is for notched displays, and without
+       matching `env(safe-area-inset-*)` padding it would slide the masthead
+       under the notch. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
   <meta name="robots" content="noindex, nofollow">
   <#-- Light only, on purpose: see the macro comment above. Declaring "light dark"
        here would let the browser paint form controls and scrollbars dark on a

@@ -564,16 +564,24 @@ select.kc-input {
 .sp-input-wrap:has(.sp-eye) .sp-input,
 .kc-input-group:has(.sp-eye) .kc-input,
 .kc-input-group:has(.sp-eye) .sp-input {
-  padding-inline-end: 52px;
+  /* Clears the 44px button and its 6px offset, with room before the text. */
+  padding-inline-end: 58px;
 }
 
+/* 44px, not 40: it fits inside the 56px field with 6px to spare either side, so
+   the larger target costs no height at all — and #737 is right that a compacted
+   layout must not be paid for out of the touch targets. (24x24 is the AA floor
+   this project holds, WCAG 2.5.8; 44x44 is 2.5.5, which is AAA. This one is
+   free, so it takes the higher bar. The remember-me label is 24px and stays
+   there: raising it would add 20px to the options row, which is the opposite of
+   what #737 asks for, and 24px already clears AA.) */
 .sp-eye {
   position: absolute;
   inset-inline-end: 6px;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -1470,11 +1478,85 @@ input.kc-btn {
   }
 }
 
-/* Very short viewports (a phone in landscape, a browser with three toolbars):
-   centring the card leaves it clipped with no way to reach the button. */
-@media (max-height: 720px) {
+/* ---------------------------------------------------------- short viewports */
+/* A 1440x900 laptop leaves ~660px once tabs, address bar, bookmarks and the
+   taskbar have taken their cut, and a phone leaves ~730px. What that clips is
+   not the primary action -- "Log in" ends at 494px and is comfortably above the
+   fold on every viewport #737 names -- but everything *after* it: the second
+   provider button, the "two ways in" panel, and the link to register. Those are
+   the onboarding affordances #725 exists for, so a first-time visitor is
+   exactly who loses them.
+
+   So this block buys vertical space back from the gaps rather than from the
+   controls. Every interactive element keeps its full height: --sp-control-h
+   stays 56px (52px on a phone), well clear of the 44px floor in WCAG 2.5.5,
+   which is also why #737 rules out squeezing the register form. It is the
+   margins between things that shrink, not the things.
+
+   780px rather than 720px so a 1440x900 laptop is included; it was 720px and
+   only re-aligned the card, which did nothing for the content below the fold. */
+@media (max-height: 780px) {
   .sp-main {
+    /* Centring a card taller than the viewport wastes the space it needs. */
     align-items: flex-start;
+    padding-block: clamp(12px, 2vh, 20px);
+  }
+
+  .sp-card {
+    padding: clamp(20px, 2.6vw, 26px);
+  }
+
+  .sp-card__head {
+    margin-bottom: 16px;
+  }
+
+  .sp-field,
+  .kc-field {
+    margin-bottom: 12px;
+  }
+
+  .sp-row,
+  .kc-form-options {
+    margin: 2px 0 14px;
+  }
+
+  .sp-or {
+    margin: 16px 0 12px;
+  }
+
+  .sp-social,
+  .kc-social-list {
+    gap: 8px;
+  }
+
+  .sp-ways {
+    margin-top: 14px;
+    padding: 12px 14px;
+  }
+
+  .sp-ways__title {
+    margin-bottom: 6px;
+  }
+
+  .sp-ways__list {
+    gap: 6px;
+  }
+
+  .sp-card__foot {
+    margin-top: 18px;
+    padding-top: 14px;
+  }
+
+  .kc-form-buttons {
+    margin-top: 16px;
+  }
+
+  /* The hero is the left column on a wide screen, so it costs no vertical space
+     there; below the stacking breakpoint it is above the card and every pixel
+     of it pushes the form down. Its lead and trust row are already hidden at
+     980px — this trims what is left of the gap. */
+  .sp-layout {
+    gap: 20px;
   }
 }
 

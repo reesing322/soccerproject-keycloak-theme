@@ -25,7 +25,7 @@ it is the landing page's own composition, palette and type:
 | the puppet mark | `public/puppet-white.png`, byte-identical |
 
 When the landing page's handoff changes, change it there first and mirror it in
-`themes/soccerproject/login/resources/css/sp-login.v6.css`. Do not tune those
+`themes/soccerproject/login/resources/css/sp-login.v7.css`. Do not tune those
 values by eye.
 
 **No dark mode, and no theme toggle.** The landing page pins its palette and
@@ -116,4 +116,4 @@ profile (username, email, firstName, lastName) when it does not.
 
 Keycloak serves theme resources with a 30-day cache header and the URL does not
 change when a file's *content* does. After editing the CSS, rename it
-(`sp-login.v6.css` → `v7`) and update `styles=` in `login/theme.properties`.
+(`sp-login.v7.css` → `v8`) and update `styles=` in `login/theme.properties`.
