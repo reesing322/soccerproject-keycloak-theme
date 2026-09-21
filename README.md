@@ -127,3 +127,12 @@ long after the bytes on disk changed. The icon set
 `reesing322/soccerproject-frontend`; when the front end regenerates its icons,
 re-copy all four and bump `?v=` in the same pass so the sign-in tab and the app
 tab never show two different marks.
+
+The account console carries the same mark from its own copy,
+`account/resources/img/favicon.ico`, declared as `favicons.ico` in
+`account/theme.properties` — Keycloak resolves theme resources per theme, so
+the login theme's copy is not reachable from there. That makes it a *fifth*
+file, not a reference to the login theme's four: re-copy it in the same pass
+and bump its `?v=` as well. Bumping that `?v=` without re-copying the bytes is
+worse than leaving both alone — it hands every cache a fresh URL for the *old*
+mark, so the account tab drifts out of step on purpose.
