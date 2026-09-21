@@ -51,8 +51,26 @@
        the same way it does on soccerproject.com. -->
   <meta name="theme-color" content="#101822">
   <title>${msg("loginTitle",(realm.displayName!''))}</title>
-  <link rel="icon" href="${url.resourcesPath}/img/favicon.png">
-  <link rel="apple-touch-icon" href="${url.resourcesPath}/img/apple-touch-icon.png">
+  <#-- The icon set is a straight copy of the front end's `public/` icons
+       (soccerproject-frontend, regenerated from the original artwork in #891):
+       the sign-in tab sits next to the app's own tab, so it must carry the same
+       mark, not an older redraw of it. Keep the two in step -- re-copy the four
+       files and bump `?v=` here whenever the front end regenerates its set.
+
+       `?v=` is the cache buster, matching the front end's `src/root.tsx`.
+       Keycloak serves theme resources with a 30-day cache header and the URL
+       does not change when a file's content does, and Chrome caches a favicon
+       per origin harder still, so replacing the bytes alone leaves the old icon
+       on screen for a month. (The CSS cannot do this -- `styles=` in
+       theme.properties owns that URL -- which is why it is versioned by
+       filename instead.)
+
+       The .ico carries 16/32/48 for the browsers that still ask for it first;
+       the two PNGs are what modern browsers pick. -->
+  <link rel="icon" href="${url.resourcesPath}/img/favicon.ico?v=6" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="${url.resourcesPath}/img/favicon-32x32.png?v=6">
+  <link rel="icon" type="image/png" sizes="16x16" href="${url.resourcesPath}/img/favicon-16x16.png?v=6">
+  <link rel="apple-touch-icon" href="${url.resourcesPath}/img/apple-touch-icon.png?v=6">
 
   <#-- No webfont link. The landing page renders in the system UI stack
        (`.lp-page` in landing.css); loading Oswald/Barlow from Google here would
