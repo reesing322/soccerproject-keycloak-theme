@@ -117,3 +117,13 @@ profile (username, email, firstName, lastName) when it does not.
 Keycloak serves theme resources with a 30-day cache header and the URL does not
 change when a file's *content* does. After editing the CSS, rename it
 (`sp-login.v7.css` → `v8`) and update `styles=` in `login/theme.properties`.
+
+The favicons are cache-busted with a `?v=` query instead, because
+`template.ftl` writes those URLs itself — bump the four `?v=` in its `<head>`.
+Chrome caches a favicon per origin and will otherwise keep serving the old one
+long after the bytes on disk changed. The icon set
+(`login/resources/img/favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`,
+`apple-touch-icon.png`) is a straight copy of `public/` in
+`reesing322/soccerproject-frontend`; when the front end regenerates its icons,
+re-copy all four and bump `?v=` in the same pass so the sign-in tab and the app
+tab never show two different marks.
