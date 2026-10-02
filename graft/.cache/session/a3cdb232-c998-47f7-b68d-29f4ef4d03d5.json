@@ -1,0 +1,12 @@
+{
+  "lastQuery": "commit this, create the PR to be continued from. Add the Czech",
+  "perAgentQuery": {},
+  "graftReads": 0,
+  "sourceReads": 0,
+  "savedTokens": 0,
+  "injectedPointers": [],
+  "nudges": 0,
+  "inputCostMicros": 223708,
+  "inputTokensBilled": 1021570,
+  "lastBillingUuid": "6dc79e4f-a06d-4d47-9936-5eb18fccfd08"
+}

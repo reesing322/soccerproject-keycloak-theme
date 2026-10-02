@@ -7,7 +7,7 @@ edit in one place: forgetting a key in one locale silently falls back to
 English, which is exactly the half-translated page the theme is meant to avoid.
 Adding a LOCALE is a new entry here plus the code in theme.properties' locales=.
 
-Only two families of keys are written:
+Two families of keys are written in every locale:
 
   * a handful of BASE keys re-worded in the product's own voice (a Keycloak
     realm says "Sign in to your account"; this one says "Log in" and calls the
@@ -15,6 +15,9 @@ Only two families of keys are written:
     below has a complete bundle in KC 26.7.1, so those strings are left alone
     rather than re-translated worse.
   * the sp* keys, which only exist here.
+
+Two further sets go to some locales only, so the files are deliberately not
+all equal: EN_ONLY (en) and MANAGER_NAME (en, nl, cs).
 
 MessageFormat: Keycloak runs EVERY msg() value through java.text.MessageFormat
 (MessageFormatterMethod), which eats single quotes. So no value may contain an
@@ -80,6 +83,63 @@ EN_ONLY = {
     # sign-in card next to our own sentence-case copy.
     "doForgotPassword": "Forgot password?",
     "doTryAnotherWay": "Try another way",
+}
+
+# The account's name is the manager name (frontend#1093), not Keycloak's
+# "username". Written for English, Dutch and Czech only; the other 27 locales
+# keep Keycloak's own translation of these keys.
+# `managerName` and `managerUsername` do not exist in Keycloak at all: they are
+# the user-profile displayName keys (`${managerName}` on the registration form,
+# `${managerUsername}` on the realm's `username` attribute). Without them the
+# label renders as the raw key (theme#7, #9). `error-invalid-value` and
+# `error-invalid-length` are what that attribute's pattern and length
+# validators report.
+MANAGER_NAME = {
+    "en": {
+        "emailInstructionUsername": "Enter your manager name and we will send you instructions for setting a new password.",
+        "invalidUsernameMessage": "Invalid manager name.",
+        "managerName": "Manager name",
+        "managerUsername": "Manager name",
+        "username": "Manager name",
+        "usernameOrEmail": "Manager name or email",
+        "emailInstruction": "Enter your manager name or email address and we will send you instructions for setting a new password.",
+        "invalidUserMessage": "Invalid manager name or password.",
+        "invalidUsernameOrEmailMessage": "Invalid manager name or email.",
+        "missingUsernameMessage": "Please enter your manager name.",
+        "usernameExistsMessage": "That manager name is already taken. Please choose another.",
+        "error-invalid-value": "Manager names are 3-20 characters: letters, digits, spaces, apostrophes and hyphens only, and must start and end with a letter or digit.",
+        "error-invalid-length": "Manager names are 3-20 characters: letters, digits, spaces, apostrophes and hyphens only, and must start and end with a letter or digit.",
+    },
+    "nl": {
+        "emailInstructionUsername": "Vul je managernaam in, dan sturen we je instructies om een nieuw wachtwoord in te stellen.",
+        "invalidUsernameMessage": "Ongeldige managernaam.",
+        "managerName": "Managernaam",
+        "managerUsername": "Managernaam",
+        "username": "Managernaam",
+        "usernameOrEmail": "Managernaam of e-mailadres",
+        "emailInstruction": "Vul je managernaam of e-mailadres in, dan sturen we je instructies om een nieuw wachtwoord in te stellen.",
+        "invalidUserMessage": "Ongeldige managernaam of wachtwoord.",
+        "invalidUsernameOrEmailMessage": "Ongeldige managernaam of e-mailadres.",
+        "missingUsernameMessage": "Voer je managernaam in.",
+        "usernameExistsMessage": "Die managernaam is al bezet. Kies een andere.",
+        "error-invalid-value": "Een managernaam is 3 tot 20 tekens: alleen letters, cijfers, spaties, apostrofs en koppeltekens, en begint en eindigt met een letter of cijfer.",
+        "error-invalid-length": "Een managernaam is 3 tot 20 tekens: alleen letters, cijfers, spaties, apostrofs en koppeltekens, en begint en eindigt met een letter of cijfer.",
+    },
+    "cs": {
+        "emailInstructionUsername": "Zadej své jméno manažera a pošleme ti pokyny k nastavení nového hesla.",
+        "invalidUsernameMessage": "Neplatné jméno manažera.",
+        "managerName": "Jméno manažera",
+        "managerUsername": "Jméno manažera",
+        "username": "Jméno manažera",
+        "usernameOrEmail": "Jméno manažera nebo e-mail",
+        "emailInstruction": "Zadej své jméno manažera nebo e-mailovou adresu a pošleme ti pokyny k nastavení nového hesla.",
+        "invalidUserMessage": "Neplatné jméno manažera nebo heslo.",
+        "invalidUsernameOrEmailMessage": "Neplatné jméno manažera nebo e-mail.",
+        "missingUsernameMessage": "Zadej své jméno manažera.",
+        "usernameExistsMessage": "Toto jméno manažera je už obsazené. Zvol si jiné.",
+        "error-invalid-value": "Jméno manažera má 3 až 20 znaků: pouze písmena, číslice, mezery, apostrofy a spojovníky, a musí začínat i končit písmenem nebo číslicí.",
+        "error-invalid-length": "Jméno manažera má 3 až 20 znaků: pouze písmena, číslice, mezery, apostrofy a spojovníky, a musí začínat i končit písmenem nebo číslicí.",
+    },
 }
 
 # Keys whose value is another key's, in every locale. `termsTitle` is the terms
@@ -1046,8 +1106,10 @@ def main():
             values[key] = values[source]
         if code == "en":
             values.update(EN_ONLY)
+        values.update(MANAGER_NAME.get(code, {}))
         missing = [k for k in keys if k not in values]
-        allowed = set(keys) | (set(EN_ONLY) if code == "en" else set())
+        allowed = (set(keys) | (set(EN_ONLY) if code == "en" else set())
+                   | set(MANAGER_NAME.get(code, {})))
         extra = [k for k in values if k not in allowed]
         if missing:
             problems.append("%s missing %s" % (code, missing))
@@ -1077,9 +1139,13 @@ def main():
                 fh.write("\n# Sentence case, English only (see EN_ONLY).\n")
                 for key in sorted(EN_ONLY):
                     fh.write("%s=%s\n" % (key, escape(M[code][key])))
+            if code in MANAGER_NAME:
+                fh.write("\n# The account name is the manager name (see MANAGER_NAME).\n")
+                for key in sorted(MANAGER_NAME[code]):
+                    fh.write("%s=%s\n" % (key, escape(M[code][key])))
         print(path)
 
-    print("%d locales, %d keys each" % (len(M), len(keys)))
+    print("%d locales, %d common keys each (en/nl/cs carry more)" % (len(M), len(keys)))
 
 
 if __name__ == "__main__":
