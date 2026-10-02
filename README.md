@@ -34,11 +34,13 @@ never chosen one; these pages are the same pre-auth journey and follow the same
 rule. A visitor who pressed a gold button on a navy gradient must not land on a
 differently-coloured page.
 
-## Only three templates are forked
+## Only four templates are forked
 
 `login.ftl`, `register.ftl` and `login-reset-password.ftl` — the last one only
 because the base page renders its instruction *below* the submit button it is
-meant to introduce (frontend#736). Every other auth page is Keycloak's own base
+meant to introduce (frontend#736) — and `login-verify-email.ftl`, only to add one
+line (theme#12). That copy is pinned to Keycloak 26.7.1: re-diff it against
+upstream on every Keycloak bump, because a bump will not update it. Every other auth page is Keycloak's own base
 template, picking up this design through the `properties.kc*Class` hooks that
 `login/theme.properties` maps onto our class names. That is the supported
 theming mechanism, and it means a Keycloak upgrade cannot leave a page we forgot
