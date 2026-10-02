@@ -93,7 +93,8 @@ EN_ONLY = {
 # `${managerUsername}` on the realm's `username` attribute). Without them the
 # label renders as the raw key (theme#7, #9). `error-invalid-value` and
 # `error-invalid-length` are what that attribute's pattern and length
-# validators report.
+# validators report. Their copy is deliberately GENERIC (theme#11): Keycloak
+# reuses the keys for other attributes, so they must not say "manager name".
 MANAGER_NAME = {
     "en": {
         "emailInstructionUsername": "Enter your manager name and we will send you instructions for setting a new password.",
@@ -107,8 +108,8 @@ MANAGER_NAME = {
         "invalidUsernameOrEmailMessage": "Invalid manager name or email.",
         "missingUsernameMessage": "Please enter your manager name.",
         "usernameExistsMessage": "That manager name is already taken. Please choose another.",
-        "error-invalid-value": "Manager names are 3-20 characters: letters, digits, spaces, apostrophes and hyphens only, and must start and end with a letter or digit.",
-        "error-invalid-length": "Manager names are 3-20 characters: letters, digits, spaces, apostrophes and hyphens only, and must start and end with a letter or digit.",
+        "error-invalid-value": "Input text should be letters, digits, spaces",
+        "error-invalid-length": "Input text should be 3-20 characters",
     },
     "nl": {
         "emailInstructionUsername": "Vul je managernaam in, dan sturen we je instructies om een nieuw wachtwoord in te stellen.",
@@ -122,8 +123,8 @@ MANAGER_NAME = {
         "invalidUsernameOrEmailMessage": "Ongeldige managernaam of e-mailadres.",
         "missingUsernameMessage": "Voer je managernaam in.",
         "usernameExistsMessage": "Die managernaam is al bezet. Kies een andere.",
-        "error-invalid-value": "Een managernaam is 3 tot 20 tekens: alleen letters, cijfers, spaties, apostrofs en koppeltekens, en begint en eindigt met een letter of cijfer.",
-        "error-invalid-length": "Een managernaam is 3 tot 20 tekens: alleen letters, cijfers, spaties, apostrofs en koppeltekens, en begint en eindigt met een letter of cijfer.",
+        "error-invalid-value": "De invoer mag alleen letters, cijfers en spaties bevatten",
+        "error-invalid-length": "De invoer moet 3 tot 20 tekens bevatten",
     },
     "cs": {
         "emailInstructionUsername": "Zadej své jméno manažera a pošleme ti pokyny k nastavení nového hesla.",
@@ -137,8 +138,8 @@ MANAGER_NAME = {
         "invalidUsernameOrEmailMessage": "Neplatné jméno manažera nebo e-mail.",
         "missingUsernameMessage": "Zadej své jméno manažera.",
         "usernameExistsMessage": "Toto jméno manažera je už obsazené. Zvol si jiné.",
-        "error-invalid-value": "Jméno manažera má 3 až 20 znaků: pouze písmena, číslice, mezery, apostrofy a spojovníky, a musí začínat i končit písmenem nebo číslicí.",
-        "error-invalid-length": "Jméno manažera má 3 až 20 znaků: pouze písmena, číslice, mezery, apostrofy a spojovníky, a musí začínat i končit písmenem nebo číslicí.",
+        "error-invalid-value": "Zadaný text smí obsahovat pouze písmena, číslice a mezery",
+        "error-invalid-length": "Zadaný text musí mít 3 až 20 znaků",
     },
 }
 
