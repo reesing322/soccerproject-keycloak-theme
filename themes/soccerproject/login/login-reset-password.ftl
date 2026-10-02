@@ -32,7 +32,7 @@
     <#elseif section = "form">
         <#-- The instruction, before the field rather than after the button. -->
         <p class="sp-card__subtitle">
-            <#if realm.duplicateEmailsAllowed>${msg("emailInstructionUsername")}<#else>${msg("emailInstruction")}</#if>
+            <#if realm.duplicateEmailsAllowed || !realm.loginWithEmailAllowed>${msg("emailInstructionUsername")}<#else>${msg("emailInstruction")}</#if>
         </p>
 
         <form id="kc-reset-password-form" class="sp-form" action="${url.loginAction}" method="post">
