@@ -17,7 +17,7 @@ Two families of keys are written in every locale:
   * the sp* keys, which only exist here.
 
 Two further sets go to some locales only, so the files are deliberately not
-all equal: EN_ONLY (en) and MANAGER_NAME (en, nl, cs).
+all equal: EN_ONLY (en), MANAGER_NAME and VERIFY_OTHER_TAB (en, nl, cs).
 
 MessageFormat: Keycloak runs EVERY msg() value through java.text.MessageFormat
 (MessageFormatterMethod), which eats single quotes. So no value may contain an
@@ -141,6 +141,16 @@ MANAGER_NAME = {
         "error-invalid-value": "Zadaný text smí obsahovat pouze písmena, číslice a mezery",
         "error-invalid-length": "Zadaný text musí mít 3 až 20 znaků",
     },
+}
+
+# Verify-email page (theme#12): the link in the mail usually opens in a new tab and
+# leaves the sign-up tab on "Email verification" for good. One static line, no
+# polling. Written for English, Dutch and Czech only, like MANAGER_NAME; the other
+# 27 locales are not served (theme.properties locales=).
+VERIFY_OTHER_TAB = {
+    "en": {"spVerifyOtherTab": "Verified in another tab? You can close this one."},
+    "nl": {"spVerifyOtherTab": "Al bevestigd in een ander tabblad? Dan kun je dit tabblad sluiten."},
+    "cs": {"spVerifyOtherTab": "Už potvrzeno v jiném panelu? Tento panel můžeš zavřít."},
 }
 
 # Keys whose value is another key's, in every locale. `termsTitle` is the terms
@@ -1108,9 +1118,10 @@ def main():
         if code == "en":
             values.update(EN_ONLY)
         values.update(MANAGER_NAME.get(code, {}))
+        values.update(VERIFY_OTHER_TAB.get(code, {}))
         missing = [k for k in keys if k not in values]
         allowed = (set(keys) | (set(EN_ONLY) if code == "en" else set())
-                   | set(MANAGER_NAME.get(code, {})))
+                   | set(MANAGER_NAME.get(code, {})) | set(VERIFY_OTHER_TAB.get(code, {})))
         extra = [k for k in values if k not in allowed]
         if missing:
             problems.append("%s missing %s" % (code, missing))
@@ -1143,6 +1154,10 @@ def main():
             if code in MANAGER_NAME:
                 fh.write("\n# The account name is the manager name (see MANAGER_NAME).\n")
                 for key in sorted(MANAGER_NAME[code]):
+                    fh.write("%s=%s\n" % (key, escape(M[code][key])))
+            if code in VERIFY_OTHER_TAB:
+                fh.write("\n# Verify-email page: close the stale tab (see VERIFY_OTHER_TAB).\n")
+                for key in sorted(VERIFY_OTHER_TAB[code]):
                     fh.write("%s=%s\n" % (key, escape(M[code][key])))
         print(path)
 
