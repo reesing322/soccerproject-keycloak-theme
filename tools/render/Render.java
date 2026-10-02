@@ -140,6 +140,10 @@ public class Render {
                 "loginRestartFlowUrl", "loginUrl", "registrationAction", "oauthAction"}) {
             url.put(k, "/realms/soccerproject/" + k);
         }
+        // -Dsp.loginRestartUrl=https://auth.development.soccerproject.com/x previews the
+        // host-derived site links (template.ftl spSite); unset keeps the relative mock.
+        url.put("loginRestartFlowUrl",
+                System.getProperty("sp.loginRestartUrl", "/realms/soccerproject/loginRestartFlowUrl"));
         url.put("resourcesPath", resourcesPath);
 
         Map<String, Object> auth = new HashMap<>();

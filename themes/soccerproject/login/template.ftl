@@ -26,7 +26,16 @@
   differently-coloured page. See the CSS header for the token source.
 -->
 <#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false showAnotherWayIfPresent=true>
+<#-- Marketing site for THIS environment (theme#8). The one image runs on every
+     environment, so a hardcoded kcLogoLink sent development testers to the
+     production legal text. auth.<env>.soccerproject.com -> www.<env>.soccerproject.com,
+     read from the host Keycloak put in its own absolute URLs; anything that does
+     not look like auth.<domain> (localhost, login.soccerproject.com) keeps kcLogoLink. -->
 <#assign spSite = properties.kcLogoLink!'https://www.soccerproject.com'>
+<#assign spAuthHost = (url.loginRestartFlowUrl!'')?matches('^https?://auth\\.([^/:]+)(:[0-9]+)?/.*')>
+<#if spAuthHost>
+  <#assign spSite = 'https://www.' + spAuthHost?groups[1]>
+</#if>
 <!DOCTYPE html>
 <html lang="${(locale.currentLanguageTag)!'en'}" data-env="${properties.environment!''}"<#if realm.internationalizationEnabled> dir="${((locale.rtl)!false)?then('rtl','ltr')}"</#if>>
 <head>
