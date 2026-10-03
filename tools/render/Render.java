@@ -15,7 +15,12 @@ public class Render {
         String key = args.get(0).toString();
         String value = messages.getProperty(key, key);
         Object[] rest = new Object[Math.max(0, args.size() - 1)];
-        for (int i = 1; i < args.size(); i++) rest[i - 1] = args.get(i).toString();
+        // As Keycloak's MessageFormatterMethod: a number stays a number, so a
+        // `{0,choice,...}` plural in the bundle formats here as it does there.
+        for (int i = 1; i < args.size(); i++) {
+            Object a = args.get(i);
+            rest[i - 1] = a instanceof TemplateNumberModel n ? n.getAsNumber() : a.toString();
+        }
         return new MessageFormat(value, Locale.ENGLISH).format(rest);
     };
 
@@ -285,7 +290,10 @@ public class Render {
             model.put("verifyEmail", true);
             model.put("stateChecker", "x");
             model.put("isAppInitiatedAction", false);
-            model.put("passwordPolicies", Map.of());
+            // KC's PasswordPoliciesBean. An unset rule is null there, so absent here.
+            model.put("passwordPolicies", Map.of("length", 8, "upperCase", 1, "digits", 1,
+                    "notUsername", true, "notEmail", false));
+            model.put("pageId", tpl.replace(".ftl", ""));
             model.put("otpLogin", Map.of("userOtpCredentials", new ArrayList<>()));
             model.put("selectedCredential", "");
             model.put("recoveryAuthnCodesConfigBean", Map.of("generatedRecoveryAuthnCodesList", new ArrayList<>()));

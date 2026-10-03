@@ -25,7 +25,7 @@ it is the landing page's own composition, palette and type:
 | the puppet mark | `public/puppet-white.png`, byte-identical |
 
 When the landing page's handoff changes, change it there first and mirror it in
-`themes/soccerproject/login/resources/css/sp-login.v7.css`. Do not tune those
+`themes/soccerproject/login/resources/css/sp-login.v8.css`. Do not tune those
 values by eye.
 
 **No dark mode, and no theme toggle.** The landing page pins its palette and
@@ -83,6 +83,14 @@ SP_MESSAGES_DIR=themes/soccerproject/login/messages python3 tools/gen_messages.p
 The generator refuses an ASCII apostrophe in any value: Keycloak runs every
 `msg()` through `java.text.MessageFormat`, which would eat it. Use `’`.
 
+**Dutch says "je", never "u"** — the game does. Keycloak's own Dutch bundle
+says "u/uw", so every base key that addresses the reader is re-worded in the
+generator's `NL_JE` section, and the generator refuses a formal "u"/"uw" in any
+Dutch value. The email theme's `email/messages/messages_nl.properties` (hand
+written, not generated) follows the same rule and is kept key for key in step
+with its `messages_en.properties`: the HTML mails read every sentence from
+there, so a missing key is an English sentence in a Dutch mail.
+
 It has two sections besides the per-locale copy. `ALIASES` gives a Keycloak key
 one of our values in every language — `termsTitle` takes the footer's wording so
 the terms page and the link to it agree. `EN_ONLY` overrides Keycloak's own
@@ -118,7 +126,7 @@ profile (username, email, firstName, lastName) when it does not.
 
 Keycloak serves theme resources with a 30-day cache header and the URL does not
 change when a file's *content* does. After editing the CSS, rename it
-(`sp-login.v7.css` → `v8`) and update `styles=` in `login/theme.properties`.
+(`sp-login.v8.css` → `v9`) and update `styles=` in `login/theme.properties`.
 
 The favicons are cache-busted with a `?v=` query instead, because
 `template.ftl` writes those URLs itself — bump the four `?v=` in its `<head>`.

@@ -16,8 +16,12 @@ Two families of keys are written in every locale:
     rather than re-translated worse.
   * the sp* keys, which only exist here.
 
-Two further sets go to some locales only, so the files are deliberately not
-all equal: EN_ONLY (en), MANAGER_NAME and VERIFY_OTHER_TAB (en, nl, cs).
+Further sets go to some locales only, so the files are deliberately not all
+equal: EN_ONLY (en); MANAGER_NAME, VERIFY_OTHER_TAB, SET_PASSWORD and
+PASSWORD_RULES (en, nl, cs); NL_JE (nl). The partial sets are listed in PARTIAL.
+
+Dutch addresses the reader as "je", never "u" (theme#20): the game does, and
+the generator refuses a formal "u"/"uw" in any Dutch value.
 
 MessageFormat: Keycloak runs EVERY msg() value through java.text.MessageFormat
 (MessageFormatterMethod), which eats single quotes. So no value may contain an
@@ -27,6 +31,11 @@ asserted at the bottom of this file.
 
 import io
 import os
+import re
+
+# Formal address in Dutch: the pronouns "u" and "uw" as whole words. "u" inside
+# a word ("uur", "Duits") or an abbreviation ("a.u.b.") does not match.
+FORMAL_NL = re.compile(r"(?<![\w.])[Uu]w?(?![\w.])")
 
 ORDER = [
     ("languages",
@@ -152,6 +161,231 @@ VERIFY_OTHER_TAB = {
     "nl": {"spVerifyOtherTab": "Al bevestigd in een ander tabblad? Dan kun je dit tabblad sluiten."},
     "cs": {"spVerifyOtherTab": "Už potvrzeno v jiném panelu? Tento panel můžeš zavřít."},
 }
+
+# The account's first password (theme#20, #10 item 1). A new manager reaches
+# login-update-password.ftl through the UPDATE_PASSWORD required action, and
+# Keycloak titles it "Update password / You need to change your password" for an
+# account that never had one. `updatePasswordTitle` is also the title when a
+# reset link lands on that page, where "Choose a password" still reads right;
+# the reset case gets its own message (resetPasswordMessage, see NL_JE).
+# `emailVerifyInstruction2` is the verify page asking about a "code" while the
+# mail carries a link (#10 item 3). English, Dutch and Czech, like MANAGER_NAME.
+SET_PASSWORD = {
+    "en": {
+        "updatePasswordTitle": "Choose a password",
+        "updatePasswordMessage": "Choose a password to activate your account.",
+        "emailVerifyInstruction2": "No email with the link?",
+    },
+    "nl": {
+        "updatePasswordTitle": "Kies je wachtwoord",
+        "updatePasswordMessage": "Kies een wachtwoord om je account te activeren.",
+        "emailVerifyInstruction2": "Geen e-mail met de link ontvangen?",
+    },
+    "cs": {
+        "updatePasswordTitle": "Zvol si heslo",
+        "updatePasswordMessage": "Pro aktivaci účtu si zvol heslo.",
+        "emailVerifyInstruction2": "Nepřišel ti e-mail s odkazem?",
+    },
+}
+
+# Password rules (theme#20, #10 item 2). Two halves:
+#
+#   * spPasswordRule* -- the list template.ftl (`spPasswordRules`) renders from
+#     the realm's `passwordPolicies` bean ABOVE the fields, so every rule is
+#     visible before the first keystroke instead of one at a time after a
+#     failed submit.
+#   * invalidPassword*Message -- what Keycloak reports when one still fails.
+#     Its own copy is plural-only ("at least 1 upper case characters", Dutch
+#     "minstens 1 hoofdletters").
+#
+# {0} is a NUMBER here (PolicyError parameters, and the bean's Integer through
+# MessageFormatterMethod), which is what lets `{0,choice,...}` pick singular or
+# plural. Czech has three forms: 1, 2-4, 5+.
+PASSWORD_RULES = {
+    "en": {
+        "spPasswordRulesTitle": "Your password needs:",
+        "spPasswordRuleLength": "at least {0} {0,choice,0#characters|1#character|1<characters}",
+        "spPasswordRuleMaxLength": "at most {0} {0,choice,0#characters|1#character|1<characters}",
+        "spPasswordRuleDigits": "at least {0} {0,choice,0#digits|1#digit|1<digits}",
+        "spPasswordRuleLowerCase": "at least {0} {0,choice,0#lowercase letters|1#lowercase letter|1<lowercase letters}",
+        "spPasswordRuleUpperCase": "at least {0} {0,choice,0#uppercase letters|1#uppercase letter|1<uppercase letters}",
+        "spPasswordRuleSpecialChars": "at least {0} {0,choice,0#special characters|1#special character|1<special characters} (such as ! or #)",
+        "spPasswordRuleNotUsername": "to differ from your manager name",
+        "spPasswordRuleNotEmail": "to differ from your email address",
+        "spPasswordRuleHistory": "{0,choice,0#to differ from your last {0} passwords|1#to differ from your last password|1<to differ from your last {0} passwords}",
+        "invalidPasswordMinLengthMessage": "Your password needs at least {0} {0,choice,0#characters|1#character|1<characters}.",
+        "invalidPasswordMaxLengthMessage": "Your password can have at most {0} {0,choice,0#characters|1#character|1<characters}.",
+        "invalidPasswordMinDigitsMessage": "Your password needs at least {0} {0,choice,0#digits|1#digit|1<digits}.",
+        "invalidPasswordMinLowerCaseCharsMessage": "Your password needs at least {0} {0,choice,0#lowercase letters|1#lowercase letter|1<lowercase letters}.",
+        "invalidPasswordMinUpperCaseCharsMessage": "Your password needs at least {0} {0,choice,0#uppercase letters|1#uppercase letter|1<uppercase letters}.",
+        "invalidPasswordMinSpecialCharsMessage": "Your password needs at least {0} {0,choice,0#special characters|1#special character|1<special characters}.",
+        "invalidPasswordNotUsernameMessage": "Your password cannot be your manager name.",
+        "invalidPasswordNotContainsUsernameMessage": "Your password cannot contain your manager name.",
+        "invalidPasswordNotEmailMessage": "Your password cannot be your email address.",
+        "invalidPasswordHistoryMessage": "{0,choice,0#Your password cannot be one of your last {0} passwords.|1#Your password cannot be your last password.|1<Your password cannot be one of your last {0} passwords.}",
+    },
+    "nl": {
+        "spPasswordRulesTitle": "Je wachtwoord moet:",
+        "spPasswordRuleLength": "minstens {0} {0,choice,0#tekens|1#teken|1<tekens} hebben",
+        "spPasswordRuleMaxLength": "hoogstens {0} {0,choice,0#tekens|1#teken|1<tekens} hebben",
+        "spPasswordRuleDigits": "minstens {0} {0,choice,0#cijfers|1#cijfer|1<cijfers} bevatten",
+        "spPasswordRuleLowerCase": "minstens {0} {0,choice,0#kleine letters|1#kleine letter|1<kleine letters} bevatten",
+        "spPasswordRuleUpperCase": "minstens {0} {0,choice,0#hoofdletters|1#hoofdletter|1<hoofdletters} bevatten",
+        "spPasswordRuleSpecialChars": "minstens {0} {0,choice,0#speciale tekens|1#speciaal teken|1<speciale tekens} bevatten (zoals ! of #)",
+        "spPasswordRuleNotUsername": "anders zijn dan je managernaam",
+        "spPasswordRuleNotEmail": "anders zijn dan je e-mailadres",
+        "spPasswordRuleHistory": "{0,choice,0#anders zijn dan je laatste {0} wachtwoorden|1#anders zijn dan je vorige wachtwoord|1<anders zijn dan je laatste {0} wachtwoorden}",
+        "invalidPasswordMinLengthMessage": "Je wachtwoord moet minstens {0} {0,choice,0#tekens|1#teken|1<tekens} hebben.",
+        "invalidPasswordMaxLengthMessage": "Je wachtwoord mag hoogstens {0} {0,choice,0#tekens|1#teken|1<tekens} hebben.",
+        "invalidPasswordMinDigitsMessage": "Je wachtwoord moet minstens {0} {0,choice,0#cijfers|1#cijfer|1<cijfers} bevatten.",
+        "invalidPasswordMinLowerCaseCharsMessage": "Je wachtwoord moet minstens {0} {0,choice,0#kleine letters|1#kleine letter|1<kleine letters} bevatten.",
+        "invalidPasswordMinUpperCaseCharsMessage": "Je wachtwoord moet minstens {0} {0,choice,0#hoofdletters|1#hoofdletter|1<hoofdletters} bevatten.",
+        "invalidPasswordMinSpecialCharsMessage": "Je wachtwoord moet minstens {0} {0,choice,0#speciale tekens|1#speciaal teken|1<speciale tekens} bevatten.",
+        "invalidPasswordNotUsernameMessage": "Je wachtwoord mag niet je managernaam zijn.",
+        "invalidPasswordNotContainsUsernameMessage": "Je wachtwoord mag je managernaam niet bevatten.",
+        "invalidPasswordNotEmailMessage": "Je wachtwoord mag niet je e-mailadres zijn.",
+        "invalidPasswordHistoryMessage": "{0,choice,0#Je wachtwoord mag niet een van je laatste {0} wachtwoorden zijn.|1#Je wachtwoord mag niet je vorige wachtwoord zijn.|1<Je wachtwoord mag niet een van je laatste {0} wachtwoorden zijn.}",
+    },
+    "cs": {
+        "spPasswordRulesTitle": "Heslo musí:",
+        "spPasswordRuleLength": "mít alespoň {0} {0,choice,0#znaků|1#znak|2#znaky|5#znaků}",
+        "spPasswordRuleMaxLength": "mít nejvýše {0} {0,choice,0#znaků|1#znak|2#znaky|5#znaků}",
+        "spPasswordRuleDigits": "obsahovat alespoň {0} {0,choice,0#číslic|1#číslici|2#číslice|5#číslic}",
+        "spPasswordRuleLowerCase": "obsahovat alespoň {0} {0,choice,0#malých písmen|1#malé písmeno|2#malá písmena|5#malých písmen}",
+        "spPasswordRuleUpperCase": "obsahovat alespoň {0} {0,choice,0#velkých písmen|1#velké písmeno|2#velká písmena|5#velkých písmen}",
+        "spPasswordRuleSpecialChars": "obsahovat alespoň {0} {0,choice,0#speciálních znaků|1#speciální znak|2#speciální znaky|5#speciálních znaků} (třeba ! nebo #)",
+        "spPasswordRuleNotUsername": "se lišit od jména manažera",
+        "spPasswordRuleNotEmail": "se lišit od e-mailové adresy",
+        "spPasswordRuleHistory": "{0,choice,0#se lišit od posledních {0} hesel|1#se lišit od předchozího hesla|2#se lišit od posledních {0} hesel}",
+        "invalidPasswordMinLengthMessage": "Heslo musí mít alespoň {0} {0,choice,0#znaků|1#znak|2#znaky|5#znaků}.",
+        "invalidPasswordMaxLengthMessage": "Heslo smí mít nejvýše {0} {0,choice,0#znaků|1#znak|2#znaky|5#znaků}.",
+        "invalidPasswordMinDigitsMessage": "Heslo musí obsahovat alespoň {0} {0,choice,0#číslic|1#číslici|2#číslice|5#číslic}.",
+        "invalidPasswordMinLowerCaseCharsMessage": "Heslo musí obsahovat alespoň {0} {0,choice,0#malých písmen|1#malé písmeno|2#malá písmena|5#malých písmen}.",
+        "invalidPasswordMinUpperCaseCharsMessage": "Heslo musí obsahovat alespoň {0} {0,choice,0#velkých písmen|1#velké písmeno|2#velká písmena|5#velkých písmen}.",
+        "invalidPasswordMinSpecialCharsMessage": "Heslo musí obsahovat alespoň {0} {0,choice,0#speciálních znaků|1#speciální znak|2#speciální znaky|5#speciálních znaků}.",
+        "invalidPasswordNotUsernameMessage": "Heslo nesmí být stejné jako jméno manažera.",
+        "invalidPasswordNotContainsUsernameMessage": "Heslo nesmí obsahovat jméno manažera.",
+        "invalidPasswordNotEmailMessage": "Heslo nesmí být stejné jako e-mailová adresa.",
+        "invalidPasswordHistoryMessage": "{0,choice,0#Heslo se nesmí shodovat s žádným z posledních {0} hesel.|1#Heslo se nesmí shodovat s předchozím heslem.|2#Heslo se nesmí shodovat s žádným z posledních {0} hesel.}",
+    },
+}
+
+# Dutch tone (theme#20, #10 item 5): the game says "je", Keycloak's Dutch bundle
+# says "u/uw" ("Voer uw e-mailadres in.", "Heeft u geen verificatiecode
+# ontvangen"). Every base key whose Dutch value addresses the reader as "u" is
+# re-worded here with "je", so the auth pages and the game speak in one voice.
+# Dutch only, for the same reason EN_ONLY is English only: no other language has
+# this fault, and overriding them would replace correct translations.
+#
+# Keys another set already re-words in "je" (MANAGER_NAME's emailInstruction*
+# and missingUsernameMessage, SET_PASSWORD's updatePasswordMessage and
+# emailVerifyInstruction2, loginAccountTitle in M["nl"]) are not repeated.
+# Left as Keycloak has it: organization.confirm-membership.title, whose
+# ${kc.org.name} placeholder is resolved by Keycloak before MessageFormat and is
+# not worth the risk on a page this realm does not use.
+# The generator refuses a formal "u"/"uw" in any Dutch value (see main()).
+NL_JE = {
+    "nl": {
+        "alreadyLoggedIn": "Je bent al ingelogd.",
+        "accountPasswordUpdatedMessage": "Je wachtwoord is gewijzigd.",
+        "accountUpdatedMessage": "Je account is bijgewerkt.",
+        "auth-username-form-help-text": "Begin met inloggen door je managernaam in te voeren",
+        "auth-username-password-form-help-text": "Log in met je managernaam en wachtwoord.",
+        "bypassKerberosDetail": "Je bent niet ingelogd via Kerberos of je browser kan niet met Kerberos inloggen. Klik op “doorgaan” om op een andere manier in te loggen.",
+        "configureBackupCodesMessage": "Je moet back-upcodes instellen om je account te activeren.",
+        "configureTotpMessage": "Je moet de mobiele authenticator instellen om je account te activeren.",
+        "confirmAccountLinking": "Bevestig dat je account {0} van identity provider {1} gekoppeld wordt aan je account.",
+        "confirmAccountLinkingBody": "Als je het account koppelt, kun je ook inloggen met account {0} van identity provider {1}. Ga alleen verder als je dit zelf gestart hebt en het account wilt koppelen.",
+        "console-accept-terms": "Ga je akkoord met de voorwaarden? [y/n]:",
+        "console-update-password": "Je moet je wachtwoord bijwerken.",
+        "console-verify-email": "Je moet je e-mailadres bevestigen. We hebben een e-mail met de verificatiecode naar {0} gestuurd. Voer die code hieronder in.",
+        "cookieNotFoundMessage": "Het cookie om opnieuw in te loggen is niet gevonden. Misschien is het verlopen of verwijderd, of staan cookies uit in je browser. Zet cookies aan en klik op Terug naar applicatie om opnieuw in te loggen.",
+        "copyCodeInstruction": "Kopieer deze code en plak hem in je app:",
+        "delegationCompleteMessage": "Je kunt dit browservenster sluiten en teruggaan naar je consoletoepassing.",
+        "delegationFailedMessage": "Je kunt dit browservenster sluiten en teruggaan naar je consoletoepassing om daar opnieuw te proberen in te loggen.",
+        "deleteCredentialMessage": "Wil je {0} verwijderen?",
+        "deletingAccountForbidden": "Je hebt onvoldoende rechten om dit account te verwijderen. Neem contact op met de beheerder.",
+        "deletingImplies": "Je account verwijderen betekent:",
+        "differentUserAuthenticated": "Je bent in deze sessie al ingelogd als gebruiker “{0}”. Log eerst uit.",
+        "doX509Login": "Je wordt ingelogd als:",
+        "emailForgotTitle": "Wachtwoord vergeten?",
+        "emailLinkIdp1": "We hebben een e-mail gestuurd met instructies om {0}-account {1} te koppelen aan je {2}-account.",
+        "emailLinkIdp2": "Geen e-mail ontvangen?",
+        "emailLinkIdp4": "Al bevestigd in een andere browser?",
+        "emailSentMessage": "Je krijgt zo een e-mail met verdere instructies.",
+        "emailVerificationPending": "We hebben een bevestigingsmail gestuurd naar {0}. Klik op “Verzenden” zonder iets te wijzigen om hem opnieuw te sturen, of vul een ander e-mailadres in.",
+        "emailVerifiedAlreadyMessage": "Je e-mailadres was al bevestigd.",
+        "emailVerifiedMessage": "Je e-mailadres is bevestigd.",
+        "emailVerifyInstruction1": "We hebben een e-mail met een bevestigingslink gestuurd naar {0}.",
+        "emailVerifyInstruction4": "Om je e-mailadres te bevestigen, sturen we je een e-mail met instructies naar {0}.",
+        "emailVerifySendCooldown": "Wacht {0} seconden voor je de bevestigingsmail opnieuw verstuurt.",
+        "errasingData": "Al je gegevens worden gewist",
+        "federatedIdentityConfirmLinkMessage": "Er bestaat al een gebruiker met {0} {1}. Hoe wil je verdergaan?",
+        "federatedIdentityConfirmOverrideMessage": "Je probeert je account {0} te koppelen aan {1}-account {2}, maar je account is al gekoppeld aan een ander {3}-account {4}. Wil je de bestaande koppeling vervangen door het nieuwe account?",
+        "federatedIdentityConfirmReauthenticateMessage": "Log opnieuw in om je account te koppelen aan {0}",
+        "finalDeletionConfirmation": "Als je je account verwijdert, kun je het niet meer terughalen. Klik op Annuleren om je account te houden.",
+        "frontchannel-logout.message": "Je logt uit bij de volgende applicaties",
+        "identity-provider-login-label": "Of log in met",
+        "identityProviderAlreadyLinkedToCurrentUserMessage": "Je account is al gekoppeld aan identity provider {0}.",
+        "identityProviderLinkSuccess": "Je account is gekoppeld aan {0}-account {1}.",
+        "idp-email-verification-help-text": "Bevestig je account via e-mail.",
+        "idp-username-password-form-help-text": "Bevestig je account door in te loggen.",
+        "invalidCodeMessage": "Er ging iets mis. Probeer opnieuw in te loggen vanuit je app.",
+        "kerberosNotSetUp": "Kerberos is niet goed ingesteld. Je kunt niet inloggen.",
+        "linkIdpActionMessage": "Wil je je account koppelen aan {0}?",
+        "linkIdpMessage": "Je moet je e-mailadres bevestigen om je account te koppelen aan {0}.",
+        "loggingOutImmediately": "Je wordt meteen uitgelogd",
+        "loginTotpIntro": "Je moet tweestapsverificatie instellen om dit account te kunnen gebruiken.",
+        "loginTotpStep1": "Installeer een van de volgende apps op je telefoon:",
+        "loginTotpStep3DeviceName": "Geef je apparaat een naam, zodat je je OTP-apparaten makkelijker beheert.",
+        "logoutConfirmHeader": "Wil je uitloggen?",
+        "missingEmailMessage": "Voer je e-mailadres in.",
+        "missingFirstNameMessage": "Voer je voornaam in.",
+        "missingLastNameMessage": "Voer je achternaam in.",
+        "missingPasswordMessage": "Voer je wachtwoord in.",
+        "missingTotpDeviceNameMessage": "Voer de naam van je apparaat in.",
+        "missingTotpMessage": "Voer je authenticatiecode in.",
+        "oauth2DeviceExpiredUserCodeMessage": "De code is verlopen. Ga terug naar je apparaat en probeer opnieuw verbinding te maken.",
+        "oauth2DeviceVerificationCompleteMessage": "Je kunt dit browservenster sluiten en teruggaan naar je apparaat.",
+        "oauth2DeviceVerificationFailedMessage": "Je kunt dit browservenster sluiten en teruggaan naar je apparaat om opnieuw verbinding te maken.",
+        "oauthGrantInformation": "Zorg dat je {0} vertrouwt en weet hoe {0} met je gegevens omgaat.",
+        "oauthGrantRequest": "Wil je deze toegangsrechten geven?",
+        "oauthGrantReview": "Je kunt dit nalezen in de",
+        "orgMemberAlready": "Je bent al lid van de organisatie {1}.",
+        "organization.confirm-membership": "Als je op de link hieronder klikt, word je lid van de organisatie {0}:",
+        "passkey-autofill-select": "Kies je passkey",
+        "passkey-unsupported-browser-text": "Deze browser ondersteunt geen passkeys. Probeer een andere browser of neem contact op met je beheerder.",
+        "password-help-text": "Log in met je wachtwoord.",
+        "readOnlyUsernameMessage": "Je kunt je managernaam niet wijzigen.",
+        "recovery-code-config-warning-message": "Druk ze af, download ze of kopieer ze naar een wachtwoordbeheerder en bewaar ze veilig. Als je deze stap annuleert, worden deze herstelcodes uit je account verwijderd.",
+        "recovery-codes-download-file-description": "Herstelcodes zijn eenmalige codes waarmee je op je account kunt inloggen als je je authenticator niet bij de hand hebt.",
+        "resetPasswordMessage": "Kies een nieuw wachtwoord.",
+        "saml.post-form.message": "Je wordt doorgestuurd, even geduld.",
+        "staleCodeMessage": "Deze pagina is verlopen. Ga terug naar je app om opnieuw in te loggen.",
+        "staleEmailVerificationLink": "Deze link is verlopen. Misschien heb je je e-mailadres al eerder bevestigd.",
+        "staleInviteOrgLink": "De link waarop je klikte, is niet meer geldig. Misschien is hij verlopen of al gebruikt.",
+        "successLogout": "Je bent nu uitgelogd",
+        "updateEmailMessage": "Je moet je e-mailadres bijwerken om je account te activeren.",
+        "updateProfileMessage": "Je moet je profiel bijwerken om je account te activeren.",
+        "verifyEmailMessage": "Bevestig je e-mailadres om je account te activeren.",
+        "verifyOAuth2DeviceUserCode": "Voer de code van je apparaat in en klik op Verzenden",
+        "webauthn-error-registration": "Je passkey registreren is mislukt. {0}",
+        "webauthn-help-text": "Log in met je passkey.",
+        "webauthn-passwordless-help-text": "Log zonder wachtwoord in met je passkey.",
+        "webauthn-registration-init-label-prompt": "Geef je geregistreerde passkey een naam",
+        "webauthn-unsupported-browser-text": "Deze browser ondersteunt geen WebAuthn. Probeer een andere browser of neem contact op met je beheerder.",
+    },
+}
+
+# The partial sets, in the order they are written to each file:
+# (name, per-locale dict, the comment above the block).
+PARTIAL = [
+    ("MANAGER_NAME", MANAGER_NAME, "The account name is the manager name (see MANAGER_NAME)."),
+    ("VERIFY_OTHER_TAB", VERIFY_OTHER_TAB, "Verify-email page: close the stale tab (see VERIFY_OTHER_TAB)."),
+    ("SET_PASSWORD", SET_PASSWORD, "The first password is chosen, not changed (see SET_PASSWORD)."),
+    ("PASSWORD_RULES", PASSWORD_RULES, "Password rules, all shown up front, singular and plural (see PASSWORD_RULES)."),
+    ("NL_JE", NL_JE, "Keycloak keys re-worded from “u” to “je”, Dutch only (see NL_JE)."),
+]
 
 # Keys whose value is another key's, in every locale. `termsTitle` is the terms
 # page's card title; ours is the same document the footer links to, so it takes
@@ -1117,11 +1351,15 @@ def main():
             values[key] = values[source]
         if code == "en":
             values.update(EN_ONLY)
-        values.update(MANAGER_NAME.get(code, {}))
-        values.update(VERIFY_OTHER_TAB.get(code, {}))
+        allowed = set(keys) | (set(EN_ONLY) if code == "en" else set())
+        for name, sets, _ in PARTIAL:
+            part = sets.get(code, {})
+            clash = [k for k in part if k in values]
+            if clash:
+                problems.append("%s: %s re-sets %s" % (code, name, clash))
+            values.update(part)
+            allowed |= set(part)
         missing = [k for k in keys if k not in values]
-        allowed = (set(keys) | (set(EN_ONLY) if code == "en" else set())
-                   | set(MANAGER_NAME.get(code, {})) | set(VERIFY_OTHER_TAB.get(code, {})))
         extra = [k for k in values if k not in allowed]
         if missing:
             problems.append("%s missing %s" % (code, missing))
@@ -1130,6 +1368,8 @@ def main():
         for k, v in values.items():
             if "'" in v:
                 problems.append("%s/%s contains an ASCII apostrophe (MessageFormat eats it)" % (code, k))
+            if code == "nl" and FORMAL_NL.search(v):
+                problems.append("nl/%s addresses the reader as “u”; the game says “je”" % k)
         M[code] = values
 
     if problems:
@@ -1151,14 +1391,11 @@ def main():
                 fh.write("\n# Sentence case, English only (see EN_ONLY).\n")
                 for key in sorted(EN_ONLY):
                     fh.write("%s=%s\n" % (key, escape(M[code][key])))
-            if code in MANAGER_NAME:
-                fh.write("\n# The account name is the manager name (see MANAGER_NAME).\n")
-                for key in sorted(MANAGER_NAME[code]):
-                    fh.write("%s=%s\n" % (key, escape(M[code][key])))
-            if code in VERIFY_OTHER_TAB:
-                fh.write("\n# Verify-email page: close the stale tab (see VERIFY_OTHER_TAB).\n")
-                for key in sorted(VERIFY_OTHER_TAB[code]):
-                    fh.write("%s=%s\n" % (key, escape(M[code][key])))
+            for _, sets, comment in PARTIAL:
+                if code in sets:
+                    fh.write("\n# %s\n" % comment)
+                    for key in sorted(sets[code]):
+                        fh.write("%s=%s\n" % (key, escape(M[code][key])))
         print(path)
 
     print("%d locales, %d common keys each (en/nl/cs carry more)" % (len(M), len(keys)))

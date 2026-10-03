@@ -980,6 +980,12 @@ input.kc-btn {
   color: var(--sp-action-blue);
 }
 
+/* The password rules (template.ftl `spPasswordRules`) reuse the panel above.
+   They sit BEFORE a field rather than after a block, so the gap goes below. */
+.sp-rules {
+  margin: 0 0 18px;
+}
+
 /* ----------------------------------------------------------------- alerts -- */
 /* Tinted card in the status ink, matching the app's own alert weight: a 3px
    leading edge and a tinted ground, not a full-bleed colour block. */
@@ -1534,6 +1540,12 @@ input.kc-btn {
   .sp-ways {
     margin-top: 14px;
     padding: 12px 14px;
+  }
+
+  /* Same specificity as .sp-ways above, so restate: the rules sit before a
+     field and keep their gap below only. */
+  .sp-rules {
+    margin-top: 0;
   }
 
   .sp-ways__title {

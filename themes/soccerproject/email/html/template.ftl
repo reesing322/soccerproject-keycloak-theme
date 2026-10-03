@@ -8,7 +8,7 @@
 -->
 <#macro emailLayout>
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+<html lang="${(locale.language)!'en'}" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -81,9 +81,8 @@
           <tr>
             <td align="center" style="padding:22px 24px 8px;">
               <div class="sp-foot" style="font-family:'Barlow Semi Condensed',Arial,sans-serif; font-size:12.5px; line-height:1.6; color:#6c87a3;">
-                You received this email because an action was requested on your
-                SoccerProject.com account.<br>
-                &copy; ${.now?string('yyyy')} SoccerProject.com &middot; Since 2004 your favorite football manager!
+                ${msg("spEmailFootReason")}<br>
+                &copy; ${.now?string('yyyy')} SoccerProject.com &middot; ${msg("spEmailFootLead")}
               </div>
             </td>
           </tr>
