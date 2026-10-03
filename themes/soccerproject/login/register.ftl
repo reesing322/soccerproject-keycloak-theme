@@ -103,6 +103,8 @@
                  `messagesPerField` keys are the base page's, so
                  RegistrationPassword validates exactly as before. -->
             <#if passwordRequired??>
+                    <#-- Every rule up front (theme#20), not one per failed submit. -->
+                    <@layout.spPasswordRules/>
                     <div class="sp-field">
                         <div class="kc-label-wrap">
                             <label for="password" class="sp-label">${msg("password")}</label>
@@ -111,6 +113,7 @@
                         <div class="sp-input-wrap" dir="ltr">
                             <input type="password" id="password" class="sp-input" name="password"
                                    autocomplete="new-password"
+                                   <#if (layout.spRules![])?has_content>aria-describedby="sp-password-rules"</#if>
                                    <#if messagesPerField.existsError('password','password-confirm')>aria-invalid="true"</#if>/>
                             <button type="button" class="sp-eye" data-sp-eye="password"
                                     aria-label="${msg('showPassword')}" aria-controls="password"

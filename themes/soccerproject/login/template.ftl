@@ -60,7 +60,9 @@
   <#-- The masthead colour, so a mobile browser's own chrome continues the page
        the same way it does on soccerproject.com. -->
   <meta name="theme-color" content="#101822">
-  <title>${msg("loginTitle",(realm.displayName!''))}</title>
+  <#-- The register page is not a sign-in page: "Log in to SoccerProject" on its
+       tab contradicted the card under it (theme#20, #10 item 5). -->
+  <title><#if (pageId!'') == 'register'>${msg("registerTitle")} · ${realm.displayName!''}<#else>${msg("loginTitle",(realm.displayName!''))}</#if></title>
   <#-- The icon set is a straight copy of the front end's `public/` icons
        (soccerproject-frontend, regenerated from the original artwork in #891):
        the sign-in tab sits next to the app's own tab, so it must carry the same
@@ -211,6 +213,14 @@
             </div>
           </#if>
 
+          <#-- ===== Password rules on the inherited update-password page =====
+               Keycloak's own page lists no rules; it reports the first one the
+               password breaks, after a submit. register.ftl places the same
+               list next to its own password field. -->
+          <#if (pageId!'') == 'login-update-password'>
+            <@spPasswordRules/>
+          </#if>
+
           <#-- ===== Page body ===== -->
           <#nested "form">
 
@@ -351,4 +361,46 @@
 </script>
 </body>
 </html>
+</#macro>
+
+<#--
+  Every rule the realm's password policy sets, before the visitor types
+  (theme#20, #10 item 2). Read from `passwordPolicies`, the PasswordPoliciesBean
+  Keycloak puts in every login page's model, so the list follows the realm's
+  policy rather than a copy of it. Rules the bean does not carry (regex,
+  blacklist) are left to Keycloak's error after submit. Renders nothing when
+  the realm sets no rule.
+
+  Styled as the register page's "two ways in" panel (.sp-ways, plus .sp-rules
+  for spacing): a quiet surface, not an alert, because nothing has gone wrong
+  yet.
+-->
+<#macro spPasswordRules>
+  <#assign spRules = []>
+  <#if passwordPolicies??>
+    <#if (passwordPolicies.length)??><#assign spRules += [msg("spPasswordRuleLength", passwordPolicies.length)]></#if>
+    <#if (passwordPolicies.maxLength)??><#assign spRules += [msg("spPasswordRuleMaxLength", passwordPolicies.maxLength)]></#if>
+    <#if (passwordPolicies.lowerCase)??><#assign spRules += [msg("spPasswordRuleLowerCase", passwordPolicies.lowerCase)]></#if>
+    <#if (passwordPolicies.upperCase)??><#assign spRules += [msg("spPasswordRuleUpperCase", passwordPolicies.upperCase)]></#if>
+    <#if (passwordPolicies.digits)??><#assign spRules += [msg("spPasswordRuleDigits", passwordPolicies.digits)]></#if>
+    <#if (passwordPolicies.specialChars)??><#assign spRules += [msg("spPasswordRuleSpecialChars", passwordPolicies.specialChars)]></#if>
+    <#if (passwordPolicies.notUsername)!false><#assign spRules += [msg("spPasswordRuleNotUsername")]></#if>
+    <#if (passwordPolicies.notEmail)!false><#assign spRules += [msg("spPasswordRuleNotEmail")]></#if>
+    <#if (passwordPolicies.passwordHistory)??><#assign spRules += [msg("spPasswordRuleHistory", passwordPolicies.passwordHistory)]></#if>
+  </#if>
+  <#if spRules?has_content>
+    <div class="sp-ways sp-rules" id="sp-password-rules">
+      <p class="sp-ways__title">${msg("spPasswordRulesTitle")}</p>
+      <ul class="sp-ways__list">
+        <#list spRules as rule>
+          <li>
+            <#-- A bullet, not the panel's tick: a tick beside a rule the
+                 password does not meet yet would read as "done". -->
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg>
+            <span>${rule}</span>
+          </li>
+        </#list>
+      </ul>
+    </div>
+  </#if>
 </#macro>
