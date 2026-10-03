@@ -1542,6 +1542,12 @@ input.kc-btn {
     padding: 12px 14px;
   }
 
+  /* Same specificity as .sp-ways above, so restate: the rules sit before a
+     field and keep their gap below only. */
+  .sp-rules {
+    margin-top: 0;
+  }
+
   .sp-ways__title {
     margin-bottom: 6px;
   }
