@@ -270,6 +270,57 @@ public class Render {
             cases.add(new Object[]{n, "inherited-" + n.replace(".ftl", ""), Collections.emptyMap(), Collections.<String>emptySet()});
         }
 
+        // info.ftl / login-page-expired.ftl as Keycloak 26.7.1 reaches them on a
+        // verify-email link (theme#24, VerifyEmailActionTokenHandler). Summary and
+        // header are formatted from the bundle, as Keycloak hands them over: the
+        // fork recognises the verified case by text, not by key. quietAuth: no
+        // "try another way" on a page that is not an authenticator step.
+        String appUrl = "https://www.soccerproject.com/";
+        Map<String, Object> appClient = Map.of("baseUrl", appUrl, "attributes", Map.of());
+        Map<String, Object> bareClient = Map.of("baseUrl", "", "attributes", Map.of());
+        String verified = messages.getProperty("emailVerifiedMessage", "emailVerifiedMessage");
+        String verifiedHeader = messages.getProperty("emailVerifiedMessageHeader", "emailVerifiedMessageHeader");
+        // Second browser, after the confirm click: no pageRedirectUri, no actionUri.
+        cases.add(new Object[]{"info.ftl", "info-email-verified",
+            Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", verified),
+                   "messageHeader", verifiedHeader, "pageRedirectUri", "", "actionUri", "",
+                   "client", appClient), Collections.<String>emptySet()});
+        cases.add(new Object[]{"info.ftl", "info-email-verified-already",
+            Map.of("auth", quietAuth, "message", Map.of("type", "info", "summary",
+                       messages.getProperty("emailVerifiedAlreadyMessage", "emailVerifiedAlreadyMessage")),
+                   "messageHeader", messages.getProperty("emailVerifiedAlreadyMessageHeader", "x"),
+                   "pageRedirectUri", "", "actionUri", "", "client", appClient),
+            Collections.<String>emptySet()});
+        // A client without baseUrl: nothing to link to, so no button (stock has none either).
+        cases.add(new Object[]{"info.ftl", "info-email-verified-no-baseurl",
+            Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", verified),
+                   "messageHeader", verifiedHeader, "pageRedirectUri", "", "actionUri", "",
+                   "client", bareClient), Collections.<String>emptySet()});
+        // Second browser, first open: the scanner-proof confirm step.
+        cases.add(new Object[]{"info.ftl", "info-confirm-email",
+            Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", new MessageFormat(
+                       messages.getProperty("confirmEmailAddressVerification", "{0}"), Locale.ENGLISH)
+                       .format(new Object[]{"manager@example.com"})),
+                   "messageHeader", messages.getProperty("confirmEmailAddressVerificationHeader", "x"),
+                   "pageRedirectUri", "", "actionUri", "/realms/soccerproject/login-actions/action-token?key=x",
+                   "client", appClient), Collections.<String>emptySet()});
+        // END_AFTER_REQUIRED_ACTIONS with a redirect: stock order, pageRedirectUri first.
+        cases.add(new Object[]{"info.ftl", "info-page-redirect",
+            Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary",
+                       messages.getProperty("accountUpdatedMessage", "accountUpdatedMessage")),
+                   "messageHeader", messages.getProperty("accountUpdatedTitle", "x"),
+                   "pageRedirectUri", appUrl + "after", "actionUri", "", "client", appClient),
+            Collections.<String>emptySet()});
+        cases.add(new Object[]{"info.ftl", "info-skip-link",
+            Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary",
+                       messages.getProperty("accountUpdatedMessage", "accountUpdatedMessage")),
+                   "pageRedirectUri", "", "actionUri", "", "client", appClient, "skipLink", true),
+            Collections.<String>emptySet()});
+        cases.add(new Object[]{"login-page-expired.ftl", "page-expired",
+            Map.of("auth", quietAuth, "message", Map.of(), "client", appClient), Collections.<String>emptySet()});
+        cases.add(new Object[]{"login-page-expired.ftl", "page-expired-no-baseurl",
+            Map.of("auth", quietAuth, "message", Map.of(), "client", bareClient), Collections.<String>emptySet()});
+
         new File(outDir).mkdirs();
         for (Object[] c : cases) {
             String tpl = (String) c[0], label = (String) c[1];
@@ -277,14 +328,14 @@ public class Render {
             @SuppressWarnings("unchecked") Set<String> errs = (Set<String>) c[3];
             Map<String, Object> model = new HashMap<>(base);
             model.put("messagesPerField", perField(errs));
-            model.putAll(extra);
             // Beans the info/error/expired pages need.
-            model.putIfAbsent("message", Map.of("type", "info", "summary", "Something to tell you."));
+            model.put("message", Map.of("type", "info", "summary", "Something to tell you."));
             model.put("messageHeader", null);
             model.put("pageRedirectUri", "/after");
             model.put("actionUri", "/action");
             model.put("client", Map.of("baseUrl", "/", "attributes", Map.of()));
-            model.put("skipLink", false);
+            // No skipLink default: Keycloak only ever sets it to true and the base
+            // pages test it with `??`, so a mock `false` hid every link.
             model.put("otpLogin", Map.of("userOtpCredentials", new ArrayList<>()));
             model.put("username", "manager@example.com");
             model.put("verifyEmail", true);
@@ -299,6 +350,8 @@ public class Render {
             model.put("recoveryAuthnCodesConfigBean", Map.of("generatedRecoveryAuthnCodesList", new ArrayList<>()));
             model.put("logoutConfirm", Map.of("code", "x", "skipLink", false));
             model.put("triggered_from_display_unsupported", false);
+            // Last, so a case can override any default above.
+            model.putAll(extra);
             try {
                 StringWriter w = new StringWriter();
                 cfg.getTemplate(tpl).process(model, w);
