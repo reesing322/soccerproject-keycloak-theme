@@ -17,8 +17,8 @@ Two families of keys are written in every locale:
   * the sp* keys, which only exist here.
 
 Further sets go to some locales only, so the files are deliberately not all
-equal: EN_ONLY (en); MANAGER_NAME, VERIFY_OTHER_TAB, SET_PASSWORD and
-PASSWORD_RULES (en, nl, cs); NL_JE (nl). The partial sets are listed in PARTIAL.
+equal: EN_ONLY (en); MANAGER_NAME, VERIFY_OTHER_TAB, VERIFY_DEAD_END,
+SET_PASSWORD and PASSWORD_RULES (en, nl, cs); NL_JE (nl). The partial sets are listed in PARTIAL.
 
 Dutch addresses the reader as "je", never "u" (theme#20): the game does, and
 the generator refuses a formal "u"/"uw" in any Dutch value.
@@ -160,6 +160,37 @@ VERIFY_OTHER_TAB = {
     "en": {"spVerifyOtherTab": "Verified in another tab? You can close this one."},
     "nl": {"spVerifyOtherTab": "Al bevestigd in een ander tabblad? Dan kun je dit tabblad sluiten."},
     "cs": {"spVerifyOtherTab": "Už potvrzeno v jiném panelu? Tento panel můžeš zavřít."},
+}
+
+# Verify-email link opened in a second browser (theme#24): Keycloak cannot
+# resume the sign-up there, so info.ftl and login-page-expired.ftl end on one
+# button into the app instead of its stock "Back to Application" / "Click here".
+# English, Dutch and Czech, like VERIFY_OTHER_TAB.
+VERIFY_DEAD_END = {
+    "en": {
+        "spEmailConfirmedTitle": "Your email is confirmed",
+        "spContinueToApp": "Continue to SoccerProject",
+        "spConfirmEmail": "Confirm my email address",
+        "spGoToApp": "Go to SoccerProject",
+        "spLoginRestart": "Log in again",
+        "spLoginContinue": "Continue logging in",
+    },
+    "nl": {
+        "spEmailConfirmedTitle": "Je e-mailadres is bevestigd",
+        "spContinueToApp": "Verder naar SoccerProject",
+        "spConfirmEmail": "Bevestig mijn e-mailadres",
+        "spGoToApp": "Ga naar SoccerProject",
+        "spLoginRestart": "Opnieuw inloggen",
+        "spLoginContinue": "Verder met inloggen",
+    },
+    "cs": {
+        "spEmailConfirmedTitle": "Tvoje e-mailová adresa je potvrzená",
+        "spContinueToApp": "Pokračovat do SoccerProject",
+        "spConfirmEmail": "Potvrdit moji e-mailovou adresu",
+        "spGoToApp": "Přejít do SoccerProject",
+        "spLoginRestart": "Přihlásit se znovu",
+        "spLoginContinue": "Pokračovat v přihlašování",
+    },
 }
 
 # The account's first password (theme#20, #10 item 1). A new manager reaches
@@ -382,6 +413,7 @@ NL_JE = {
 PARTIAL = [
     ("MANAGER_NAME", MANAGER_NAME, "The account name is the manager name (see MANAGER_NAME)."),
     ("VERIFY_OTHER_TAB", VERIFY_OTHER_TAB, "Verify-email page: close the stale tab (see VERIFY_OTHER_TAB)."),
+    ("VERIFY_DEAD_END", VERIFY_DEAD_END, "Verify link in a second browser: one button into the app (see VERIFY_DEAD_END)."),
     ("SET_PASSWORD", SET_PASSWORD, "The first password is chosen, not changed (see SET_PASSWORD)."),
     ("PASSWORD_RULES", PASSWORD_RULES, "Password rules, all shown up front, singular and plural (see PASSWORD_RULES)."),
     ("NL_JE", NL_JE, "Keycloak keys re-worded from “u” to “je”, Dutch only (see NL_JE)."),
