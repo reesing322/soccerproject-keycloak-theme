@@ -14,6 +14,7 @@
 
     * showAnotherWayIfPresent  — required param, pages pass it
     * messageHeader            — pages may override the card title
+    * spTitle (ours, not KC's) — a fork overrides even messageHeader (theme#24)
     * "socialProviders" section — KC25+ renders IdP buttons in their own section
     * try-another-way form     — auth.showTryAnotherWayLink()
     * attempted-username block — auth.showUsername() + loginRestartFlowUrl
@@ -25,7 +26,7 @@
   visitor who pressed a gold button on a navy gradient must not land on a
   differently-coloured page. See the CSS header for the token source.
 -->
-<#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false showAnotherWayIfPresent=true>
+<#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false showAnotherWayIfPresent=true spTitle="">
 <#-- Marketing site for THIS environment (theme#8). The one image runs on every
      environment, so a hardcoded kcLogoLink sent development testers to the
      production legal text. auth.<env>.soccerproject.com -> www.<env>.soccerproject.com,
@@ -182,9 +183,19 @@
       <div class="sp-card-col">
         <div class="sp-card">
 
-          <#-- Header. KC26 pages may supply messageHeader to override the title. -->
+          <#-- Header. KC26 pages may supply messageHeader to override the title;
+               spTitle, passed by one of our own forks, overrides both (info.ftl
+               replaces Keycloak's "Email address verified", theme#24).
+               Keycloak 26.7.1 fills messageHeader two ways: most callers format
+               it first (getMessage), but the info page after required actions
+               gets the bare key "accountUpdatedTitle" (AuthenticationManager)
+               and an organisation sign-up "organization.member.register.title"
+               (RegistrationPage). Stock info.ftl/register.ftl resolve it with
+               msg(). A key-shaped value (no spaces) goes through msg() here too;
+               formatted text is printed as is, so a second MessageFormat pass
+               cannot eat an apostrophe or trip on a brace. -->
           <div class="sp-card__head">
-            <h2 class="sp-card__title"><#if messageHeader??>${kcSanitize(messageHeader)?no_esc}<#else><#nested "header"></#if></h2>
+            <h2 class="sp-card__title"><#if spTitle?has_content>${spTitle}<#elseif messageHeader?has_content && messageHeader?matches("[A-Za-z0-9_.-]+")>${kcSanitize(msg(messageHeader))?no_esc}<#elseif messageHeader??>${kcSanitize(messageHeader)?no_esc}<#else><#nested "header"></#if></h2>
             <#if displayRequiredFields>
               <p class="sp-required-hint"><span class="req">*</span> ${msg("requiredFields")}</p>
             </#if>

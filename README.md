@@ -41,19 +41,33 @@ ships its own `prefers-color-scheme: dark` block (Apple Mail, iOS Mail). Keep
 it, and check the header, button and links in both schemes when you change that
 file (theme#22).
 
-## Only four templates are forked
+## Only six templates are forked
 
 `login.ftl`, `register.ftl` and `login-reset-password.ftl` — the last one only
 because the base page renders its instruction *below* the submit button it is
-meant to introduce (frontend#736) — and `login-verify-email.ftl`, only to add one
-line (theme#12). That copy is pinned to Keycloak 26.7.1: re-diff it against
-upstream on every Keycloak bump, because a bump will not update it. Every other auth page is Keycloak's own base
+meant to introduce (frontend#736) — `login-verify-email.ftl`, only to add one
+line (theme#12), and `info.ftl` and `login-page-expired.ftl` (theme#24). Those
+two are where a verify-email link opened in a second browser (iOS Mail → Safari)
+ends: Keycloak cannot resume the sign-up there, and the stock pages offer only
+"« Back to Application" or links that restart Keycloak's own login. The forks
+put one primary button to the client's `baseUrl` on both, so they depend on the
+realm giving `soccerproject-frontend` a `baseUrl`; without one the expired page
+is stock and the email-verified page shows its title with no button (stock
+shows no link there either). `info.ftl` recognises the email-verified case by comparing
+`message.summary` with `msg("emailVerifiedMessage")` (the bean carries no key),
+and its title comes through `template.ftl`'s `spTitle`, which outranks
+Keycloak's `messageHeader`. `template.ftl` resolves a key-shaped
+`messageHeader` through `msg()`, as the stock pages do: after required actions
+Keycloak passes the bare key `accountUpdatedTitle`, not formatted text.
+
+The forked base pages are pinned to Keycloak 26.7.1: re-diff each against
+upstream on every Keycloak bump, because a bump will not update them. Every other auth page is Keycloak's own base
 template, picking up this design through the `properties.kc*Class` hooks that
 `login/theme.properties` maps onto our class names. That is the supported
 theming mechanism, and it means a Keycloak upgrade cannot leave a page we forgot
 to fork rendering unstyled.
 
-`idp-commons.ftl` holds what the two forked pages share: the identity-provider
+`idp-commons.ftl` holds what the two forked sign-in pages share: the identity-provider
 buttons (with inline brand marks, since no icon font is loaded) and the "two
 ways in" panel.
 
