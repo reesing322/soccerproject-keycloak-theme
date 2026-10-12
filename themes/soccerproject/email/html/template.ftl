@@ -19,7 +19,17 @@
   <!--[if mso]><style>* { font-family: 'Arial Narrow', Arial, sans-serif !important; }</style><![endif]-->
   <style>
     /* progressive only — most of the styling is inlined below */
+    :root { color-scheme: light dark; supported-color-schemes: light dark; }
     a { color: #2670c2; }
+    /* iOS/Apple Mail data detectors wrap bare text such as the "SoccerProject.com"
+       wordmark in <a x-apple-data-detectors>, which the rule above (and the dark
+       one below) then paint link-blue on the navy banner (theme#22). Keep it
+       looking like the text it was. */
+    a[x-apple-data-detectors] {
+      color: inherit !important; text-decoration: none !important;
+      font-size: inherit !important; font-family: inherit !important;
+      font-weight: inherit !important; line-height: inherit !important;
+    }
     .sp-btn-a:hover { background: #2670c2 !important; }
     @media (prefers-color-scheme: dark) {
       .sp-body   { background: #060f1d !important; }
@@ -31,6 +41,8 @@
       .sp-codebox{ background: #0b1830 !important; border-color: rgba(255,255,255,.16) !important; color: #e8eef7 !important; }
       .sp-foot   { color: #728cab !important; }
       a { color: #6fa8ec !important; }
+      /* the !important above beats the button's inline white label (1.7:1 on its blue) */
+      .sp-btn-a { color: #ffffff !important; }
     }
     @media only screen and (max-width: 600px) {
       .sp-w { width: 100% !important; }
@@ -54,7 +66,7 @@
 
           <!-- brand banner -->
           <tr>
-            <td style="border-radius:16px 16px 0 0; background:#06182f; background-image:linear-gradient(115deg,#020a14,#06182f 46%,#1d4d7e); padding:26px 36px;" class="sp-pad">
+            <td bgcolor="#06182f" style="border-radius:16px 16px 0 0; background:#06182f; background-image:linear-gradient(115deg,#020a14,#06182f 46%,#1d4d7e); padding:26px 36px;" class="sp-pad">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="left" style="font-family:'Oswald','Arial Narrow',Arial,sans-serif; font-size:21px; font-weight:700; color:#ffffff; letter-spacing:.4px;">
