@@ -110,7 +110,9 @@ generator's `NL_JE` section, and the generator refuses a formal "u"/"uw" in any
 Dutch value. The email theme's `email/messages/messages_nl.properties` (hand
 written, not generated) follows the same rule and is kept key for key in step
 with its `messages_en.properties`: the HTML mails read every sentence from
-there, so a missing key is an English sentence in a Dutch mail.
+there, so a missing key is an English sentence in a Dutch mail. The same goes
+for `messages_cs.properties`, which says "ty" like the login theme's Czech: a
+key missing there falls back to the realm's default locale, then English.
 
 It has two sections besides the per-locale copy. `ALIASES` gives a Keycloak key
 one of our values in every language — `termsTitle` takes the footer's wording so
