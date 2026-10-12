@@ -714,7 +714,10 @@ M["cs"] = dict(
     spTrustFree="Zdarma",
     spTrustYears="Online od roku 2004",
     spTrustFair="Nikdy pay-to-win",
-    spContinueWith="Pokračovat pomocí {0}",
+    # "přes" takes the accusative, which for Google and Facebook is the bare
+    # name; "pomocí" would need the genitive ("pomocí Facebooku") and {0} is
+    # the undeclined display name.
+    spContinueWith="Pokračovat přes {0}",
     spOrUseEmail="nebo použij e-mailovou adresu",
     spWaysTitle="Dvě cesty dovnitř",
     spWaySocial="Pokračuj se svým účtem Google nebo Facebook — žádné nové heslo k zapamatování.",

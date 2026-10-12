@@ -79,12 +79,15 @@ signed a manager in to auth pages in their own language and then dropped them
 into an English app. Czech was switched back on when the app added it.
 
 The other 27 bundles are still here and still generated; nothing was thrown away.
-Turning one back on is two edits and no translation work — its code in
-`login/theme.properties` and in the realm's `supportedLocales` — and every one
-of them has a **complete** base bundle in Keycloak 26.7.1, so no page comes out
-half-English when it is switched on: our own strings live in `login/messages/`,
-everything else is Keycloak's own translation. The full set is listed in a
-comment next to `locales=`.
+Turning one back on needs no translation work for the auth pages — its code in
+`locales=` of the login, email and account `theme.properties`, and in the
+realm's `supportedLocales` — and every one of them has a **complete** base
+bundle in Keycloak 26.7.1, so no auth page comes out half-English when it is
+switched on: our own strings live in `login/messages/`, everything else is
+Keycloak's own translation. The full set is listed in a comment next to
+`locales=`. The **mails** are the exception: they need a hand-written
+`email/messages/messages_<code>.properties` (see below), or the HTML body comes
+out in English under a translated subject.
 
 The obvious next step is to enable them in step with the app's own switcher, one
 language at a time, rather than all at once.
@@ -111,8 +114,10 @@ Dutch value. The email theme's `email/messages/messages_nl.properties` (hand
 written, not generated) follows the same rule and is kept key for key in step
 with its `messages_en.properties`: the HTML mails read every sentence from
 there, so a missing key is an English sentence in a Dutch mail. The same goes
-for `messages_cs.properties`, which says "ty" like the login theme's Czech: a
-key missing there falls back to the realm's default locale, then English.
+for `messages_cs.properties`, which says "ty" like our own Czech login strings:
+a key missing there falls back to the realm's default locale, then English.
+Czech has no `NL_JE` counterpart yet, so Keycloak's own Czech strings on the
+auth pages (and its other mails) still say "vy".
 
 It has two sections besides the per-locale copy. `ALIASES` gives a Keycloak key
 one of our values in every language — `termsTitle` takes the footer's wording so
