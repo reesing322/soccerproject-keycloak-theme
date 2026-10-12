@@ -34,6 +34,13 @@ never chosen one; these pages are the same pre-auth journey and follow the same
 rule. A visitor who pressed a gold button on a navy gradient must not land on a
 differently-coloured page.
 
+The `email` theme is the exception: it is read inside the recipient's mail
+client, not on our pages, and several clients recolour messages in dark mode on
+their own. So `email/html/template.ftl` declares `color-scheme: light dark` and
+ships its own `prefers-color-scheme: dark` block (Apple Mail, iOS Mail). Keep
+it, and check the header, button and links in both schemes when you change that
+file (theme#22).
+
 ## Only four templates are forked
 
 `login.ftl`, `register.ftl` and `login-reset-password.ftl` — the last one only
