@@ -305,10 +305,13 @@ public class Render {
                    "pageRedirectUri", "", "actionUri", "/realms/soccerproject/login-actions/action-token?key=x",
                    "client", appClient), Collections.<String>emptySet()});
         // END_AFTER_REQUIRED_ACTIONS with a redirect: stock order, pageRedirectUri first.
+        // This is where a second-browser sign-up ends when a required action
+        // (UPDATE_PASSWORD) follows the verification. AuthenticationManager puts
+        // the bare KEY in messageHeader here, not formatted text, so the mock does too.
         cases.add(new Object[]{"info.ftl", "info-page-redirect",
             Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary",
                        messages.getProperty("accountUpdatedMessage", "accountUpdatedMessage")),
-                   "messageHeader", messages.getProperty("accountUpdatedTitle", "x"),
+                   "messageHeader", "accountUpdatedTitle",
                    "pageRedirectUri", appUrl + "after", "actionUri", "", "client", appClient),
             Collections.<String>emptySet()});
         cases.add(new Object[]{"info.ftl", "info-skip-link",

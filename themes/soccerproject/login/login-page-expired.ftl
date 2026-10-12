@@ -28,7 +28,7 @@
     <#elseif section = "info">
         <p id="instruction1">
             <a id="loginRestartLink" href="${url.loginRestartFlowUrl}">${msg("spLoginRestart")}</a>
-            &middot;
+            <span aria-hidden="true">&middot;</span>
             <a id="loginContinueLink" href="${url.loginAction}">${msg("spLoginContinue")}</a>
         </p>
     </#if>

@@ -44,11 +44,14 @@ two are where a verify-email link opened in a second browser (iOS Mail → Safar
 ends: Keycloak cannot resume the sign-up there, and the stock pages offer only
 "« Back to Application" or links that restart Keycloak's own login. The forks
 put one primary button to the client's `baseUrl` on both, so they depend on the
-realm giving `soccerproject-frontend` a `baseUrl`; without one they fall back to
-the stock behaviour. `info.ftl` recognises the email-verified case by comparing
+realm giving `soccerproject-frontend` a `baseUrl`; without one the expired page
+is stock and the email-verified page shows its title with no button (stock
+shows no link there either). `info.ftl` recognises the email-verified case by comparing
 `message.summary` with `msg("emailVerifiedMessage")` (the bean carries no key),
 and its title comes through `template.ftl`'s `spTitle`, which outranks
-Keycloak's `messageHeader`.
+Keycloak's `messageHeader`. `template.ftl` resolves a key-shaped
+`messageHeader` through `msg()`, as the stock pages do: after required actions
+Keycloak passes the bare key `accountUpdatedTitle`, not formatted text.
 
 The forked base pages are pinned to Keycloak 26.7.1: re-diff each against
 upstream on every Keycloak bump, because a bump will not update them. Every other auth page is Keycloak's own base

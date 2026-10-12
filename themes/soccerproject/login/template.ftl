@@ -185,9 +185,17 @@
 
           <#-- Header. KC26 pages may supply messageHeader to override the title;
                spTitle, passed by one of our own forks, overrides both (info.ftl
-               replaces Keycloak's "Email address verified", theme#24). -->
+               replaces Keycloak's "Email address verified", theme#24).
+               Keycloak 26.7.1 fills messageHeader two ways: most callers format
+               it first (getMessage), but the info page after required actions
+               gets the bare key "accountUpdatedTitle" (AuthenticationManager)
+               and an organisation sign-up "organization.member.register.title"
+               (RegistrationPage). Stock info.ftl/register.ftl resolve it with
+               msg(). A key-shaped value (no spaces) goes through msg() here too;
+               formatted text is printed as is, so a second MessageFormat pass
+               cannot eat an apostrophe or trip on a brace. -->
           <div class="sp-card__head">
-            <h2 class="sp-card__title"><#if spTitle?has_content>${spTitle}<#elseif messageHeader??>${kcSanitize(messageHeader)?no_esc}<#else><#nested "header"></#if></h2>
+            <h2 class="sp-card__title"><#if spTitle?has_content>${spTitle}<#elseif messageHeader?has_content && messageHeader?matches("[A-Za-z0-9_.-]+")>${kcSanitize(msg(messageHeader))?no_esc}<#elseif messageHeader??>${kcSanitize(messageHeader)?no_esc}<#else><#nested "header"></#if></h2>
             <#if displayRequiredFields>
               <p class="sp-required-hint"><span class="req">*</span> ${msg("requiredFields")}</p>
             </#if>
