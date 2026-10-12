@@ -52,12 +52,12 @@ ways in" panel.
 
 ## Languages
 
-**Two are offered: English and Dutch.** Cut back from 30 in frontend#735 —
-the application ships only those two (`src/i18n/locales.ts`), so the other 28
+**Three are offered: English, Dutch and Czech**, the languages the application
+ships (`src/i18n/locales.ts`). Cut back from 30 in frontend#735: the others
 signed a manager in to auth pages in their own language and then dropped them
-into an English app.
+into an English app. Czech was switched back on when the app added it.
 
-The 28 bundles are still here and still generated; nothing was thrown away.
+The other 27 bundles are still here and still generated; nothing was thrown away.
 Turning one back on is two edits and no translation work — its code in
 `login/theme.properties` and in the realm's `supportedLocales` — and every one
 of them has a **complete** base bundle in Keycloak 26.7.1, so no page comes out
