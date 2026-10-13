@@ -20,6 +20,7 @@ import sys
 import zipfile
 
 sys.dont_write_bytecode = True  # no tools/__pycache__ from the import below
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # also under python3 -I
 from gen_messages import FORMAL_NL  # noqa: E402
 
 BUNDLE = "themes/soccerproject/email/messages/messages_nl.properties"
@@ -31,8 +32,12 @@ UNUSED = {"emailVerificationBodyHtml", "passwordResetBodyHtml"}
 
 
 def parse(text):
+    """key=value lines only. Fails on a continuation line rather than misread it:
+    neither bundle uses one, so a Keycloak upgrade that does gets a parser."""
     values = {}
     for line in text.splitlines():
+        if line.endswith("\\") and not line.endswith("\\\\"):
+            raise SystemExit("continuation line, not supported: %s" % line[:60])
         if not line.strip() or line.lstrip().startswith(("#", "!")) or "=" not in line:
             continue
         key, value = line.split("=", 1)
