@@ -121,6 +121,21 @@ a key missing there falls back to the realm's default locale, then English.
 Czech has no `NL_JE` counterpart yet, so Keycloak's own Czech strings on the
 auth pages (and its other mails) still say "vy".
 
+Keycloak's other Dutch mails (execute-actions, e-mail change, security alerts,
+…) are re-worded with "je" at the bottom of the Dutch email bundle (theme#34).
+Check that file after every edit and after a Keycloak upgrade:
+
+```bash
+docker create --name kcjar quay.io/keycloak/keycloak:26.7.1
+docker cp kcjar:/opt/keycloak/lib/lib/main/org.keycloak.keycloak-themes-26.7.1.jar /tmp/
+docker rm kcjar
+python3 tools/check_email_messages.py /tmp/org.keycloak.keycloak-themes-26.7.1.jar
+```
+
+Without the jar it only checks for "u" and ASCII apostrophes. With the jar it
+also fails on a Keycloak Dutch key that says "u" and is not overridden, and on
+an override that uses a `{n}` Keycloak does not pass.
+
 **The account is a "manager name"** on every page, not a "username"
 (theme#9, theme#16). The realm's `username` attribute keeps `displayName:
 ${username}`, a key Keycloak defines in every theme, so the admin console still
