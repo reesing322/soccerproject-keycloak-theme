@@ -34,8 +34,9 @@ import os
 import re
 
 # Formal address in Dutch: the pronouns "u" and "uw" as whole words. "u" inside
-# a word ("uur", "Duits") or an abbreviation ("a.u.b.") does not match.
-FORMAL_NL = re.compile(r"(?<![\w.])[Uu]w?(?![\w.])")
+# a word ("uur", "Duits") or an abbreviation ("a.u.b.") does not match; "u." at
+# the end of a sentence does.
+FORMAL_NL = re.compile(r"(?<![\w.])[Uu]w?(?!\w)")
 
 ORDER = [
     ("languages",
