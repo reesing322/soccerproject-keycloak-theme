@@ -44,9 +44,11 @@ file (theme#22).
 The email layout is not the login pages' navy one: it is the backend's own mail
 layout (`EMailMessageEventUtilities.htmlDocument` in soccerproject-backend), so
 an account mail and a match report look like one sender (theme#14). Same
-heritage tokens, blue header, card, button and footer (wordmark, why, CymIT BV ·
-privacy link). Change one, change the other. The dark-mode block above is the
-one part the backend does not have.
+heritage tokens, blue header, card, button and footer chrome. Change one, change
+the other. Where they differ on purpose: the dark-mode block above; the footer
+always shows its why-line and privacy link (the backend shows the why-line only
+on opt-out mail and drops the privacy link when its URL is unset); and an
+MSO-only 600px wrapper, since Word-based Outlook ignores `max-width`.
 
 ## Only six templates are forked
 

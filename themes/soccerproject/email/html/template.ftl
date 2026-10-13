@@ -31,7 +31,7 @@
      auth.<env>.soccerproject.com in the action link -> www.<env>.soccerproject.com.
      A mail without a link, or any other host, keeps production. -->
 <#assign spSite = 'https://www.soccerproject.com'>
-<#assign spAuthHost = (link!'')?matches('^https?://auth\\.((?:[^/:.]+\\.)*soccerproject\\.com)(:[0-9]+)?/.*')>
+<#assign spAuthHost = (link!'')?matches('^https?://auth\\.((?:[a-z0-9-]+\\.)*soccerproject\\.com)(:[0-9]+)?/.*')>
 <#if spAuthHost>
   <#assign spSite = 'https://www.' + spAuthHost?groups[1]>
 </#if>
@@ -72,9 +72,11 @@
   </style>
 </head>
 <body class="sp-body" style="margin:0; padding:0; background:${spSurface2}; font-family:${spFont}; color:${spText}; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="sp-body" style="background:${spSurface2}; padding:16px 8px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="sp-body" style="background:${spSurface2};">
     <tr>
-      <td align="center">
+      <td align="center" style="padding:16px 8px;">
+        <#-- Word-based Outlook ignores max-width: pin it to 600 there. -->
+        <!--[if mso]><table role="presentation" width="600" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="sp-card" style="width:100%; max-width:600px; background:${spSurface}; border:1px solid ${spBorder}; border-radius:${spRadius};">
 
           <!-- header -->
@@ -101,6 +103,7 @@
           </tr>
 
         </table>
+        <!--[if mso]></td></tr></table><![endif]-->
       </td>
     </tr>
   </table>
