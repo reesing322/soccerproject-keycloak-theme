@@ -6,7 +6,7 @@ Three themes under one provider (`soccerproject`), built for **Keycloak 26.7.1**
 | Theme | What it skins |
 |---|---|
 | `login` | sign-in, register, reset password, OTP — every auth page |
-| `account` | the account console (`keycloak.v3`, CSS-only branding) |
+| `account` | the account console (`keycloak.v3`: CSS branding plus a four-key bundle) |
 | `email` | the transactional HTML emails |
 
 ## The design comes from the landing page
@@ -113,6 +113,17 @@ Dutch value. The email theme's `email/messages/messages_nl.properties` (hand
 written, not generated) follows the same rule and is kept key for key in step
 with its `messages_en.properties`: the HTML mails read every sentence from
 there, so a missing key is an English sentence in a Dutch mail.
+
+**The account is a "manager name"** on every page, not a "username"
+(theme#9, theme#16). The realm's `username` attribute keeps `displayName:
+${username}`, a key Keycloak defines in every theme, so the admin console still
+says "Username" while the login bundle (generated, `MANAGER_NAME`) and the
+account bundle (`account/messages/`, hand written, en/nl/cs) override it to
+"Manager name". Both also define `managerName` and `managerUsername`, so a realm
+whose user profile points `displayName` at one of those renders the same text.
+A locale without these keys falls back to English: Keycloak 26.7.1 resolves a
+missing key through the realm's default locale and then `en`
+(`LocaleUtil.getParentLocale`), never to the raw key.
 
 It has two sections besides the per-locale copy. `ALIASES` gives a Keycloak key
 one of our values in every language — `termsTitle` takes the footer's wording so
