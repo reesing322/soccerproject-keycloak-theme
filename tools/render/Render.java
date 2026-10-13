@@ -270,6 +270,11 @@ public class Render {
             cases.add(new Object[]{n, "inherited-" + n.replace(".ftl", ""), Collections.emptyMap(), Collections.<String>emptySet()});
         }
 
+        // Verify-email as an app-initiated action: Send/Cancel form, no resend
+        // footer and no "Start again" (the plain inherited case is the sign-up path).
+        cases.add(new Object[]{"login-verify-email.ftl", "verify-email-aia",
+            Map.of("isAppInitiatedAction", true), Collections.<String>emptySet()});
+
         // info.ftl / login-page-expired.ftl as Keycloak 26.7.1 reaches them on a
         // verify-email link (theme#24, VerifyEmailActionTokenHandler). Summary and
         // header are formatted from the bundle, as Keycloak hands them over: the
@@ -369,7 +374,8 @@ public class Render {
             model.put("username", "manager@example.com");
             model.put("verifyEmail", true);
             model.put("stateChecker", "x");
-            model.put("isAppInitiatedAction", false);
+            // No isAppInitiatedAction default either: Keycloak sets it only for an
+            // app-initiated action, so absent is the sign-up path (theme#36).
             // KC's PasswordPoliciesBean. An unset rule is null there, so absent here.
             model.put("passwordPolicies", Map.of("length", 8, "upperCase", 1, "digits", 1,
                     "notUsername", true, "notEmail", false));

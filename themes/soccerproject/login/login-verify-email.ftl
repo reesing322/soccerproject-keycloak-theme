@@ -14,7 +14,7 @@
             <#-- theme#12: the mail link opens in a NEW tab and strands this one. -->
             <p class="instruction">${msg("spVerifyOtherTab")}</p>
         </#if>
-        <#if isAppInitiatedAction??>
+        <#if isAppInitiatedAction!false>
             <form id="kc-verify-email-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
                 <div class="${properties.kcFormGroupClass!}">
                     <div id="kc-form-buttons" class="${properties.kcFormButtonsClass!}">
@@ -29,7 +29,7 @@
             </form>
         </#if>
     <#elseif section = "info">
-        <#if !isAppInitiatedAction??>
+        <#if !(isAppInitiatedAction!false)>
             <p class="instruction">
                 ${msg("emailVerifyInstruction2")}
                 <br/>
