@@ -41,6 +41,13 @@ ships its own `prefers-color-scheme: dark` block (Apple Mail, iOS Mail). Keep
 it, and check the header, button and links in both schemes when you change that
 file (theme#22).
 
+The email layout is not the login pages' navy one: it is the backend's own mail
+layout (`EMailMessageEventUtilities.htmlDocument` in soccerproject-backend), so
+an account mail and a match report look like one sender (theme#14). Same
+heritage tokens, blue header, card, button and footer (wordmark, why, CymIT BV ·
+privacy link). Change one, change the other. The dark-mode block above is the
+one part the backend does not have.
+
 ## Only six templates are forked
 
 `login.ftl`, `register.ftl` and `login-reset-password.ftl` — the last one only
