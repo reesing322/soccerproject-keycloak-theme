@@ -53,7 +53,9 @@ ends: Keycloak cannot resume the sign-up there, and the stock pages offer only
 put one primary button to the client's `baseUrl` on both, so they depend on the
 realm giving `soccerproject-frontend` a `baseUrl`; without one the expired page
 is stock and the email-verified page shows its title with no button (stock
-shows no link there either). `info.ftl` recognises the email-verified case by comparing
+shows no link there either). On the email-verified page that button carries
+`verified=1` (theme#29), so the app's landing page can tell this visitor from a
+cold one. `info.ftl` recognises the email-verified case by comparing
 `message.summary` with `msg("emailVerifiedMessage")` (the bean carries no key),
 and its title comes through `template.ftl`'s `spTitle`, which outranks
 Keycloak's `messageHeader`. `template.ftl` resolves a key-shaped

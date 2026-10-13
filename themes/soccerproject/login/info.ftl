@@ -8,7 +8,9 @@
   "« Back to Application" text link. Changes against stock:
 
     * email verified (or verified already), no pageRedirectUri, no actionUri:
-      our own title and ONE primary button to client.baseUrl.
+      our own title and ONE primary button to client.baseUrl, tagged with
+      verified=1 so the app's landing page can tell this visitor from a cold
+      one (theme#29, frontend#3384).
     * otherwise the stock order -- pageRedirectUri, then actionUri, then
       client.baseUrl -- with the link drawn as a primary button. The actionUri
       step is Keycloak's "confirm validity of e-mail address" page, which
@@ -29,6 +31,10 @@
       || spHeader == msg("emailVerifiedMessageHeader") || spHeader == msg("emailVerifiedAlreadyMessageHeader"))>
 <#assign spConfirmEmail = actionUri?has_content
   && (spHeader == msg("confirmEmailAddressVerificationHeader") || spHeader == "confirmEmailAddressVerificationHeader")>
+<#assign spAppUrl = (client.baseUrl)!''>
+<#if spEmailVerified && spAppUrl?has_content>
+  <#assign spAppUrl = spAppUrl + spAppUrl?contains("?")?then("&", "?") + "verified=1">
+</#if>
 <#assign spBtnClass = "${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!}">
 <@layout.registrationLayout displayMessage=false spTitle=spEmailVerified?then(msg("spEmailConfirmedTitle"), ""); section>
     <#if section = "header">
@@ -48,8 +54,8 @@
                 <div class="${properties.kcFormButtonsClass!}"><a id="sp-info-continue" class="${spBtnClass}" href="${pageRedirectUri}">${msg("spContinueToApp")}</a></div>
             <#elseif actionUri?has_content>
                 <div class="${properties.kcFormButtonsClass!}"><a id="sp-info-action" class="${spBtnClass}" href="${actionUri}"><#if spConfirmEmail>${msg("spConfirmEmail")}<#else>${msg("doContinue")}</#if></a></div>
-            <#elseif (client.baseUrl)?has_content>
-                <div class="${properties.kcFormButtonsClass!}"><a id="sp-info-continue" class="${spBtnClass}" href="${client.baseUrl}">${msg("spContinueToApp")}</a></div>
+            <#elseif spAppUrl?has_content>
+                <div class="${properties.kcFormButtonsClass!}"><a id="sp-info-continue" class="${spBtnClass}" href="${spAppUrl}">${msg("spContinueToApp")}</a></div>
             </#if>
         </#if>
     </div>

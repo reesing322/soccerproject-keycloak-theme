@@ -291,6 +291,12 @@ public class Render {
                    "messageHeader", messages.getProperty("emailVerifiedAlreadyMessageHeader", "x"),
                    "pageRedirectUri", "", "actionUri", "", "client", appClient),
             Collections.<String>emptySet()});
+        // A baseUrl that already carries a query: verified=1 is joined with '&' (theme#29).
+        cases.add(new Object[]{"info.ftl", "info-email-verified-query-baseurl",
+            Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", verified),
+                   "messageHeader", verifiedHeader, "pageRedirectUri", "", "actionUri", "",
+                   "client", Map.of("baseUrl", appUrl + "?lang=nl", "attributes", Map.of())),
+            Collections.<String>emptySet()});
         // A client without baseUrl: nothing to link to, so no button (stock has none either).
         cases.add(new Object[]{"info.ftl", "info-email-verified-no-baseurl",
             Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", verified),
