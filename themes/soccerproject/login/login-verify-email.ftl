@@ -35,6 +35,12 @@
                 <br/>
                 <a href="${url.loginAction}">${msg("doClickHere")}</a> ${msg("emailVerifyInstruction3")}
             </p>
+            <#-- theme#36: a typo in the address left no way out. Keycloak cannot change
+                 it here, so restart the flow: login page, then "Create your club". -->
+            <p id="sp-verify-wrong-address" class="instruction">
+                ${msg("spVerifyWrongAddress")}
+                <a id="sp-verify-start-again" href="${url.loginRestartFlowUrl}">${msg("spVerifyStartAgain")}</a> ${msg("spVerifyStartAgainHint")}
+            </p>
         </#if>
     </#if>
 </@layout.registrationLayout>

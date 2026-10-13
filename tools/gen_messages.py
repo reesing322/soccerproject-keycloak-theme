@@ -17,7 +17,7 @@ Two families of keys are written in every locale:
   * the sp* keys, which only exist here.
 
 Further sets go to some locales only, so the files are deliberately not all
-equal: EN_ONLY (en); MANAGER_NAME, VERIFY_OTHER_TAB, VERIFY_DEAD_END,
+equal: EN_ONLY (en); MANAGER_NAME, VERIFY_OTHER_TAB, VERIFY_WAY_OUT, VERIFY_DEAD_END,
 SET_PASSWORD and PASSWORD_RULES (en, nl, cs); NL_JE (nl). The partial sets are listed in PARTIAL.
 
 Dutch addresses the reader as "je", never "u" (theme#20): the game does, and
@@ -161,6 +161,30 @@ VERIFY_OTHER_TAB = {
     "en": {"spVerifyOtherTab": "Verified in another tab? You can close this one."},
     "nl": {"spVerifyOtherTab": "Al bevestigd in een ander tabblad? Dan kun je dit tabblad sluiten."},
     "cs": {"spVerifyOtherTab": "Už potvrzeno v jiném panelu? Tento panel můžeš zavřít."},
+}
+
+# Verify-email page, wrong address (theme#36): the page offered only "re-send to
+# the same address". Keycloak cannot change the address from here (VERIFY_EMAIL
+# blocks the account console), so the way out is its own restart-flow URL: back
+# to the login page, where "Create your club" starts a fresh sign-up. The first
+# account keeps its manager name, hence "a new manager name".
+# English, Dutch and Czech, like VERIFY_OTHER_TAB.
+VERIFY_WAY_OUT = {
+    "en": {
+        "spVerifyWrongAddress": "Wrong address?",
+        "spVerifyStartAgain": "Start again",
+        "spVerifyStartAgainHint": "and create your club with the right one, under a new manager name.",
+    },
+    "nl": {
+        "spVerifyWrongAddress": "Verkeerd adres?",
+        "spVerifyStartAgain": "Begin opnieuw",
+        "spVerifyStartAgainHint": "en maak je club aan met het juiste, onder een nieuwe managernaam.",
+    },
+    "cs": {
+        "spVerifyWrongAddress": "Špatná adresa?",
+        "spVerifyStartAgain": "Začni znovu",
+        "spVerifyStartAgainHint": "a založ si klub se správnou adresou, pod novým jménem manažera.",
+    },
 }
 
 # Verify-email link opened in a second browser (theme#24): Keycloak cannot
@@ -414,6 +438,7 @@ NL_JE = {
 PARTIAL = [
     ("MANAGER_NAME", MANAGER_NAME, "The account name is the manager name (see MANAGER_NAME)."),
     ("VERIFY_OTHER_TAB", VERIFY_OTHER_TAB, "Verify-email page: close the stale tab (see VERIFY_OTHER_TAB)."),
+    ("VERIFY_WAY_OUT", VERIFY_WAY_OUT, "Verify-email page: wrong address, start again (see VERIFY_WAY_OUT)."),
     ("VERIFY_DEAD_END", VERIFY_DEAD_END, "Verify link in a second browser: one button into the app (see VERIFY_DEAD_END)."),
     ("SET_PASSWORD", SET_PASSWORD, "The first password is chosen, not changed (see SET_PASSWORD)."),
     ("PASSWORD_RULES", PASSWORD_RULES, "Password rules, all shown up front, singular and plural (see PASSWORD_RULES)."),
