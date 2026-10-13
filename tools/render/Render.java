@@ -291,6 +291,32 @@ public class Render {
                    "messageHeader", messages.getProperty("emailVerifiedAlreadyMessageHeader", "x"),
                    "pageRedirectUri", "", "actionUri", "", "client", appClient),
             Collections.<String>emptySet()});
+        // A baseUrl that already carries a query: verified=1 is joined with '&' (theme#29).
+        cases.add(new Object[]{"info.ftl", "info-email-verified-query-baseurl",
+            Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", verified),
+                   "messageHeader", verifiedHeader, "pageRedirectUri", "", "actionUri", "",
+                   "client", Map.of("baseUrl", appUrl + "?lang=nl", "attributes", Map.of())),
+            Collections.<String>emptySet()});
+        // A fragment stays last, and a verified= already in the query is replaced.
+        cases.add(new Object[]{"info.ftl", "info-email-verified-fragment-baseurl",
+            Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", verified),
+                   "messageHeader", verifiedHeader, "pageRedirectUri", "", "actionUri", "",
+                   "client", Map.of("baseUrl", appUrl + "?verified=0&lang=nl#top", "attributes", Map.of())),
+            Collections.<String>emptySet()});
+        // Keycloak handing over the bare header key, as it does for accountUpdatedTitle.
+        cases.add(new Object[]{"info.ftl", "info-email-verified-header-key",
+            Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", "x"),
+                   "messageHeader", "emailVerifiedMessageHeader", "pageRedirectUri", "", "actionUri", "",
+                   "client", appClient), Collections.<String>emptySet()});
+        // The continue link each info.ftl case must render (theme#29); "" = no button.
+        Map<String, String> continueHref = new HashMap<>();
+        continueHref.put("info-email-verified", appUrl + "?verified=1");
+        continueHref.put("info-email-verified-already", appUrl + "?verified=1");
+        continueHref.put("info-email-verified-query-baseurl", appUrl + "?lang=nl&amp;verified=1");
+        continueHref.put("info-email-verified-fragment-baseurl", appUrl + "?lang=nl&amp;verified=1#top");
+        continueHref.put("info-email-verified-header-key", appUrl + "?verified=1");
+        continueHref.put("info-email-verified-no-baseurl", "");
+        continueHref.put("info-page-redirect", appUrl + "after");
         // A client without baseUrl: nothing to link to, so no button (stock has none either).
         cases.add(new Object[]{"info.ftl", "info-email-verified-no-baseurl",
             Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", verified),
@@ -361,6 +387,13 @@ public class Render {
                 String html = w.toString();
                 try (Writer f = new OutputStreamWriter(new FileOutputStream(new File(outDir, label + ".html")), "UTF-8")) {
                     f.write(html);
+                }
+                String want = continueHref.get(label);
+                if (want != null) {
+                    java.util.regex.Matcher m = java.util.regex.Pattern
+                        .compile("id=\"sp-info-continue\"[^>]*href=\"([^\"]*)\"").matcher(html);
+                    String got = m.find() ? m.group(1) : "";
+                    if (!got.equals(want)) throw new IllegalStateException("continue href " + got + ", want " + want);
                 }
                 System.out.printf("OK    %-34s %6d bytes%n", label, html.length());
             } catch (Exception e) {
