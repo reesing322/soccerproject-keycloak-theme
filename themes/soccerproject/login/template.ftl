@@ -34,7 +34,7 @@
      not look like auth.[<env>.]soccerproject.com (localhost, login.soccerproject.com, any
      other domain: a spoofed Host must not pick a link target) keeps kcLogoLink. -->
 <#assign spSite = properties.kcLogoLink!'https://www.soccerproject.com'>
-<#assign spAuthHost = (url.loginRestartFlowUrl!'')?matches('^https?://auth\\.((?:[^/:.]+\\.)*soccerproject\\.com)(:[0-9]+)?/.*')>
+<#assign spAuthHost = (url.loginRestartFlowUrl!'')?matches('^https?://auth\\.((?:[a-z0-9-]+\\.)*soccerproject\\.com)(:[0-9]+)?/.*')>
 <#if spAuthHost>
   <#assign spSite = 'https://www.' + spAuthHost?groups[1]>
 </#if>
