@@ -14,7 +14,7 @@
             <#-- theme#12: the mail link opens in a NEW tab and strands this one. -->
             <p class="instruction">${msg("spVerifyOtherTab")}</p>
         </#if>
-        <#if isAppInitiatedAction??>
+        <#if isAppInitiatedAction!false>
             <form id="kc-verify-email-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
                 <div class="${properties.kcFormGroupClass!}">
                     <div id="kc-form-buttons" class="${properties.kcFormButtonsClass!}">
@@ -29,11 +29,17 @@
             </form>
         </#if>
     <#elseif section = "info">
-        <#if !isAppInitiatedAction??>
+        <#if !(isAppInitiatedAction!false)>
             <p class="instruction">
                 ${msg("emailVerifyInstruction2")}
                 <br/>
                 <a href="${url.loginAction}">${msg("doClickHere")}</a> ${msg("emailVerifyInstruction3")}
+            </p>
+            <#-- theme#36: a typo in the address left no way out. Keycloak cannot change
+                 it here, so restart the flow: login page, then "Create your club". -->
+            <p id="sp-verify-wrong-address" class="instruction">
+                ${msg("spVerifyWrongAddress")}
+                <a id="sp-verify-start-again" href="${url.loginRestartFlowUrl}">${msg("spVerifyStartAgain")}</a> ${msg("spVerifyStartAgainHint")}
             </p>
         </#if>
     </#if>

@@ -54,8 +54,11 @@ MSO-only 600px wrapper, since Word-based Outlook ignores `max-width`.
 
 `login.ftl`, `register.ftl` and `login-reset-password.ftl` — the last one only
 because the base page renders its instruction *below* the submit button it is
-meant to introduce (frontend#736) — `login-verify-email.ftl`, only to add one
-line (theme#12), and `info.ftl` and `login-page-expired.ftl` (theme#24). Those
+meant to introduce (frontend#736) — `login-verify-email.ftl`, only to add two
+lines: close the stale tab (theme#12), and a "Start again" link for a mistyped
+address (theme#36: Keycloak's restart-flow URL, because the address cannot be
+changed on that page and the account console stays blocked until it is
+verified); and `info.ftl` and `login-page-expired.ftl` (theme#24). Those
 two are where a verify-email link opened in a second browser (iOS Mail → Safari)
 ends: Keycloak cannot resume the sign-up there, and the stock pages offer only
 "« Back to Application" or links that restart Keycloak's own login. The forks
