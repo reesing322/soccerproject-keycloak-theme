@@ -190,6 +190,16 @@ keycloak-config-cli only applies that block when the realm also sets
 `attributes.userProfileEnabled`, silently keeping Keycloak's built-in default
 profile (username, email, firstName, lastName) when it does not.
 
+`register.ftl` adds two things around those fields (theme#42), neither of
+which replaces a realm validator. The manager name shows its rule under the
+field, read from the attribute's own `length` validator (and its `pattern`,
+when that is the realm's `^[\p{L}\p{N} ]+$`), so the realm stays the source.
+And on submit every text field loses its outer whitespace and any zero-width
+or bidi control character, so a pasted address with a trailing space passes
+and a name of invisible characters arrives empty. With JS off, or through any
+other client, only the realm's validators apply: a realm that asks for first
+and last names should give them a `pattern` that rejects those characters.
+
 ## Cache busting
 
 Keycloak serves theme resources with a 30-day cache header and the URL does not

@@ -83,8 +83,24 @@
 
         <form id="kc-register-form" class="sp-form" action="${url.registrationAction}" method="post">
 
-            <#-- The profile's own fields first, in the realm's declared order. -->
-            <@userProfileCommons.userProfileFormFields/>
+            <#-- The profile's own fields first, in the realm's declared order.
+
+                 Under the manager name, its rule (theme#42): the pattern and
+                 length validators otherwise only ever answer "Invalid value."
+                 after a submit. Read from the realm's own validators, so the
+                 hint follows the realm; the character half is printed only for
+                 the pattern it describes, and no length validator means no
+                 hint. The script at the bottom moves it into the field and
+                 points aria-describedby at it. -->
+            <@userProfileCommons.userProfileFormFields; callback, attribute>
+                <#if callback = "afterField" && attribute.name == "username">
+                    <#assign spLen = (attribute.validators.length)!{}>
+                    <#if spLen.min?? && spLen.max??>
+                        <#assign spPattern = (attribute.validators.pattern.pattern)!"">
+                        <p id="sp-username-rule" class="kc-helper-after"><#if spPattern == "^[\\p{L}\\p{N} ]+$">${msg("spManagerNameRule", spLen.min, spLen.max)}<#else>${msg("spManagerNameRuleLength", spLen.min, spLen.max)}</#if></p>
+                    </#if>
+                </#if>
+            </@userProfileCommons.userProfileFormFields>
 
             <#-- Then the password pair.
 
@@ -230,6 +246,39 @@
           })();
         </script>
         </#if>
+
+        <#-- ===== Pasted input (theme#42) =====
+
+             A pasted address with a space either side failed as "Invalid email
+             address", and names made of zero-width or bidi control characters,
+             or of spaces only, were accepted. On submit, every text field the
+             profile renders loses those invisible characters and its outer
+             whitespace; a name left empty then gets Keycloak's own "please
+             specify" error. The manager name gets a maxlength from its rule,
+             so 5000 pasted characters do not wait for the server to say no.
+
+             Not a validator: the realm still decides (see the README), and with
+             JS off the form posts what was typed, as before. -->
+        <script>
+          (function () {
+            var form = document.getElementById('kc-register-form');
+            if (!form) return;
+            var invisible = /[\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/g;
+            var rule = document.getElementById('sp-username-rule');
+            var username = document.getElementById('username');
+            if (rule && username) {
+              username.parentNode.appendChild(rule);
+              username.setAttribute('aria-describedby', rule.id);
+              username.setAttribute('maxlength', '${(spLen.max)!""}');
+            }
+            form.addEventListener('submit', function () {
+              Array.prototype.forEach.call(form.querySelectorAll('input[type="text"], input[type="email"], input:not([type])'), function (input) {
+                var clean = input.value.replace(invisible, '').trim();
+                if (clean !== input.value) input.value = clean;
+              });
+            });
+          })();
+        </script>
 
         <#-- What happens next, and the reassurance that nothing is being asked
              for beyond an address. Kept below the button: it answers an
