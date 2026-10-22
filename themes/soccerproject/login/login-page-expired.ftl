@@ -4,27 +4,20 @@
 
   Reached by going back or reloading after a verify-email link was opened in a
   second browser. Stock offers only "click here" to restart or continue
-  Keycloak's own login, which never leads to the app. With a client.baseUrl
-  (the realm sets one on soccerproject-frontend) the way into the app is the
-  primary button and the two stock links move to the card foot; without one
-  the page is stock.
+  Keycloak's own login, which never leads to the app. The way into the app is
+  the primary button and the two stock links move, named for what they do, to
+  the card foot. The app is client.baseUrl, or this environment's site when
+  the client has none (theme#40): the realm config sets no baseUrl, and the
+  stock fallback was two bare "Click here" links.
 -->
 <#import "template.ftl" as layout>
-<#assign spAppUrl = (client.baseUrl)!''>
-<@layout.registrationLayout displayInfo=spAppUrl?has_content; section>
+<@layout.registrationLayout displayInfo=true; section>
     <#if section = "header">
         ${msg("pageExpiredTitle")}
     <#elseif section = "form">
-        <#if spAppUrl?has_content>
-            <div class="${properties.kcFormButtonsClass!}">
-                <a id="sp-go-to-app" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!}" href="${spAppUrl}">${msg("spGoToApp")}</a>
-            </div>
-        <#else>
-            <p id="instruction1" class="instruction">
-                ${msg("pageExpiredMsg1")} <a id="loginRestartLink" href="${url.loginRestartFlowUrl}">${msg("doClickHere")}</a> .<br/>
-                ${msg("pageExpiredMsg2")} <a id="loginContinueLink" href="${url.loginAction}">${msg("doClickHere")}</a> .
-            </p>
-        </#if>
+        <div class="${properties.kcFormButtonsClass!}">
+            <a id="sp-go-to-app" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!}" href="${layout.spAppUrl()}">${msg("spGoToApp")}</a>
+        </div>
     <#elseif section = "info">
         <p id="instruction1">
             <a id="loginRestartLink" href="${url.loginRestartFlowUrl}">${msg("spLoginRestart")}</a>
