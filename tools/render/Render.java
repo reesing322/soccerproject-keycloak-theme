@@ -191,6 +191,20 @@ public class Render {
                 a.length > 1 && Boolean.parseBoolean(a[1]),
                 "email".equals(a[0]) ? "email" : ("username".equals(a[0]) ? "username" : null)));
         }
+        // The manager name's validators as Keycloak's Attribute bean hands them
+        // over (validator -> config map), for the rule under the field (theme#42).
+        for (Map<String, Object> a : attrs) {
+            if (!"username".equals(a.get("name"))) continue;
+            Map<String, Object> validators = new HashMap<>();
+            String len = realmFacts.getProperty("usernameLength");
+            if (len != null) {
+                String[] mm = len.split(":", -1);
+                validators.put("length", Map.of("min", mm[0], "max", mm[1]));
+            }
+            String pattern = realmFacts.getProperty("usernamePattern");
+            if (pattern != null) validators.put("pattern", Map.of("pattern", pattern));
+            a.put("validators", validators);
+        }
         profile.put("attributes", attrs);
         profile.put("html5DataAnnotations", new LinkedHashMap<String, String>());
 

@@ -120,6 +120,10 @@ MANAGER_NAME = {
         "usernameExistsMessage": "That manager name is already taken. Please choose another.",
         "error-invalid-value": "Input text should be letters, digits, spaces",
         "error-invalid-length": "Input text should be 3-20 characters",
+        # Under the register form's manager-name field (theme#42), from the
+        # realm's own length validator; the second only with its known pattern.
+        "spManagerNameRuleLength": "{0} to {1} characters.",
+        "spManagerNameRule": "{0} to {1} characters: letters, digits and spaces.",
     },
     "nl": {
         "emailInstructionUsername": "Vul je managernaam in, dan sturen we je instructies om een nieuw wachtwoord in te stellen.",
@@ -135,6 +139,8 @@ MANAGER_NAME = {
         "usernameExistsMessage": "Die managernaam is al bezet. Kies een andere.",
         "error-invalid-value": "De invoer mag alleen letters, cijfers en spaties bevatten",
         "error-invalid-length": "De invoer moet 3 tot 20 tekens bevatten",
+        "spManagerNameRuleLength": "{0} tot {1} tekens.",
+        "spManagerNameRule": "{0} tot {1} tekens: letters, cijfers en spaties.",
     },
     "cs": {
         "emailInstructionUsername": "Zadej své jméno manažera a pošleme ti pokyny k nastavení nového hesla.",
@@ -150,6 +156,8 @@ MANAGER_NAME = {
         "usernameExistsMessage": "Toto jméno manažera je už obsazené. Zvol si jiné.",
         "error-invalid-value": "Zadaný text smí obsahovat pouze písmena, číslice a mezery",
         "error-invalid-length": "Zadaný text musí mít 3 až 20 znaků",
+        "spManagerNameRuleLength": "{0} až {1} znaků.",
+        "spManagerNameRule": "{0} až {1} znaků: písmena, číslice a mezery.",
     },
 }
 
