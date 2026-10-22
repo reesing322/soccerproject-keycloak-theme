@@ -8,7 +8,7 @@
   "« Back to Application" text link. Changes against stock:
 
     * email verified (or verified already), no pageRedirectUri, no actionUri:
-      our own title and ONE primary button to client.baseUrl, tagged with
+      our own title and ONE primary button into the app, tagged with
       verified=1 so the app's landing page can tell this visitor from a cold
       one (theme#29, frontend#3384). The already-verified page is tagged too:
       the player is verified either way.
@@ -17,6 +17,10 @@
       step is Keycloak's "confirm validity of e-mail address" page, which
       config cannot remove (it stops mail link scanners from spending the
       token), so it gets a button that says what it does.
+
+  "The app" is client.baseUrl, or this environment's site when the client has
+  none (theme#40, layout.spAppUrl): reopening a used link must not end on a
+  title with nothing to click.
 
   The message bean carries only the formatted text, not its key, so the
   verified case is recognised by comparing against the same keys formatted in
@@ -33,7 +37,8 @@
       || spHeader == "emailVerifiedMessageHeader" || spHeader == "emailVerifiedAlreadyMessageHeader")>
 <#assign spConfirmEmail = actionUri?has_content
   && (spHeader == msg("confirmEmailAddressVerificationHeader") || spHeader == "confirmEmailAddressVerificationHeader")>
-<#assign spAppUrl = (client.baseUrl)!''>
+<#-- client.baseUrl, else this environment's site (theme#40). -->
+<#assign spAppUrl = layout.spAppUrl()>
 <#-- verified=1 goes into the query, before any #fragment, replacing a verified=
      the baseUrl already carries (theme#29). -->
 <#if spEmailVerified && spAppUrl?has_content>

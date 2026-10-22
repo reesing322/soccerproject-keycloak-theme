@@ -26,7 +26,6 @@
   visitor who pressed a gold button on a navy gradient must not land on a
   differently-coloured page. See the CSS header for the token source.
 -->
-<#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false showAnotherWayIfPresent=true spTitle="">
 <#-- Marketing site for THIS environment (theme#8). The one image runs on every
      environment, so a hardcoded kcLogoLink sent development testers to the
      production legal text. auth.<env>.soccerproject.com -> www.<env>.soccerproject.com,
@@ -38,6 +37,15 @@
 <#if spAuthHost>
   <#assign spSite = 'https://www.' + spAuthHost?groups[1]>
 </#if>
+<#-- The way into the game from a page that ends a flow (theme#24, theme#40):
+     the client's baseUrl when the realm sets one, else this environment's own
+     site, whose / sends a signed-in manager on into the app. The realm config
+     sets no baseUrl on soccerproject-frontend, so without the fallback the
+     error, email-verified and page-expired pages had nothing to click. -->
+<#function spAppUrl>
+  <#return (client.baseUrl)?has_content?then(client.baseUrl, spSite)>
+</#function>
+<#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false showAnotherWayIfPresent=true spTitle="">
 <!DOCTYPE html>
 <html lang="${(locale.currentLanguageTag)!'en'}" data-env="${properties.environment!''}"<#if realm.internationalizationEnabled> dir="${((locale.rtl)!false)?then('rtl','ltr')}"</#if>>
 <head>

@@ -281,6 +281,12 @@ public class Render {
         // fork recognises the verified case by text, not by key. quietAuth: no
         // "try another way" on a page that is not an authenticator step.
         String appUrl = "https://www.soccerproject.com/";
+        // template.ftl's spSite for the mock's loginRestartFlowUrl (theme#8 rule).
+        String siteUrl = themeProps.getProperty("kcLogoLink");
+        java.util.regex.Matcher authHost = java.util.regex.Pattern
+            .compile("^https?://auth\\.((?:[a-z0-9-]+\\.)*soccerproject\\.com)(:[0-9]+)?/.*")
+            .matcher((String) url.get("loginRestartFlowUrl"));
+        if (authHost.matches()) siteUrl = "https://www." + authHost.group(1);
         Map<String, Object> appClient = Map.of("baseUrl", appUrl, "attributes", Map.of());
         Map<String, Object> bareClient = Map.of("baseUrl", "", "attributes", Map.of());
         String verified = messages.getProperty("emailVerifiedMessage", "emailVerifiedMessage");
@@ -320,9 +326,10 @@ public class Render {
         continueHref.put("info-email-verified-query-baseurl", appUrl + "?lang=nl&amp;verified=1");
         continueHref.put("info-email-verified-fragment-baseurl", appUrl + "?lang=nl&amp;verified=1#top");
         continueHref.put("info-email-verified-header-key", appUrl + "?verified=1");
-        continueHref.put("info-email-verified-no-baseurl", "");
+        // No baseUrl on the client: the environment's site instead (theme#40).
+        continueHref.put("info-email-verified-no-baseurl", siteUrl + "?verified=1");
         continueHref.put("info-page-redirect", appUrl + "after");
-        // A client without baseUrl: nothing to link to, so no button (stock has none either).
+        // A client without baseUrl, as the realm config ships it (theme#40).
         cases.add(new Object[]{"info.ftl", "info-email-verified-no-baseurl",
             Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", verified),
                    "messageHeader", verifiedHeader, "pageRedirectUri", "", "actionUri", "",
@@ -354,6 +361,23 @@ public class Render {
             Map.of("auth", quietAuth, "message", Map.of(), "client", appClient), Collections.<String>emptySet()});
         cases.add(new Object[]{"login-page-expired.ftl", "page-expired-no-baseurl",
             Map.of("auth", quietAuth, "message", Map.of(), "client", bareClient), Collections.<String>emptySet()});
+        // A verify link reopened after use (theme#40): "Action expired", HTTP 400.
+        Map<String, Object> expired = Map.of("type", "error", "summary",
+            messages.getProperty("expiredActionMessage", "expiredActionMessage"));
+        cases.add(new Object[]{"error.ftl", "error-expired-action",
+            Map.of("auth", quietAuth, "message", expired, "client", appClient), Collections.<String>emptySet()});
+        cases.add(new Object[]{"error.ftl", "error-expired-action-no-baseurl",
+            Map.of("auth", quietAuth, "message", expired, "client", bareClient), Collections.<String>emptySet()});
+        cases.add(new Object[]{"error.ftl", "error-skip-link",
+            Map.of("auth", quietAuth, "message", expired, "client", appClient, "skipLink", true),
+            Collections.<String>emptySet()});
+        // The way into the app on the other flow-ending pages: {element id, href}; "" = none.
+        Map<String, String[]> appButton = new HashMap<>();
+        appButton.put("page-expired", new String[]{"sp-go-to-app", appUrl});
+        appButton.put("page-expired-no-baseurl", new String[]{"sp-go-to-app", siteUrl});
+        appButton.put("error-expired-action", new String[]{"backToApplication", appUrl});
+        appButton.put("error-expired-action-no-baseurl", new String[]{"backToApplication", siteUrl});
+        appButton.put("error-skip-link", new String[]{"backToApplication", ""});
 
         new File(outDir).mkdirs();
         for (Object[] c : cases) {
@@ -394,12 +418,13 @@ public class Render {
                 try (Writer f = new OutputStreamWriter(new FileOutputStream(new File(outDir, label + ".html")), "UTF-8")) {
                     f.write(html);
                 }
-                String want = continueHref.get(label);
-                if (want != null) {
+                String[] button = continueHref.containsKey(label)
+                    ? new String[]{"sp-info-continue", continueHref.get(label)} : appButton.get(label);
+                if (button != null) {
                     java.util.regex.Matcher m = java.util.regex.Pattern
-                        .compile("id=\"sp-info-continue\"[^>]*href=\"([^\"]*)\"").matcher(html);
+                        .compile("id=\"" + button[0] + "\"[^>]*href=\"([^\"]*)\"").matcher(html);
                     String got = m.find() ? m.group(1) : "";
-                    if (!got.equals(want)) throw new IllegalStateException("continue href " + got + ", want " + want);
+                    if (!got.equals(button[1])) throw new IllegalStateException(button[0] + " href " + got + ", want " + button[1]);
                 }
                 System.out.printf("OK    %-34s %6d bytes%n", label, html.length());
             } catch (Exception e) {

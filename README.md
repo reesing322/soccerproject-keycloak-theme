@@ -50,7 +50,7 @@ always shows its why-line and privacy link (the backend shows the why-line only
 on opt-out mail and drops the privacy link when its URL is unset); and an
 MSO-only 600px wrapper, since Word-based Outlook ignores `max-width`.
 
-## Only six templates are forked
+## Only seven templates are forked
 
 `login.ftl`, `register.ftl` and `login-reset-password.ftl` — the last one only
 because the base page renders its instruction *below* the submit button it is
@@ -58,14 +58,16 @@ meant to introduce (frontend#736) — `login-verify-email.ftl`, only to add two
 lines: close the stale tab (theme#12), and a "Start again" link for a mistyped
 address (theme#36: Keycloak's restart-flow URL, because the address cannot be
 changed on that page and the account console stays blocked until it is
-verified); and `info.ftl` and `login-page-expired.ftl` (theme#24). Those
-two are where a verify-email link opened in a second browser (iOS Mail → Safari)
-ends: Keycloak cannot resume the sign-up there, and the stock pages offer only
-"« Back to Application" or links that restart Keycloak's own login. The forks
-put one primary button to the client's `baseUrl` on both, so they depend on the
-realm giving `soccerproject-frontend` a `baseUrl`; without one the expired page
-is stock and the email-verified page shows its title with no button (stock
-shows no link there either). On the email-verified page (fresh or already
+verified); and `info.ftl`, `login-page-expired.ftl` (theme#24) and
+`error.ftl` (theme#40). Those three are where a verify-email link ends when it
+is opened in a second browser (iOS Mail → Safari) or opened again after use:
+Keycloak cannot resume the sign-up there, and the stock pages offer only
+"« Back to Application", "Action expired" or links that restart Keycloak's own
+login. The forks put one primary button into the app on all three: the
+client's `baseUrl`, or this environment's own site (the masthead link,
+`spAppUrl` in `template.ftl`) when the client has none — and the realm config
+sets none on `soccerproject-frontend`, which is why the page-expired and
+email-verified pages had nothing to click (theme#40). On the email-verified page (fresh or already
 verified) that button carries `verified=1` (theme#29), so the app's landing page can tell this visitor from a
 cold one. `info.ftl` recognises the email-verified case by comparing
 `message.summary` with `msg("emailVerifiedMessage")` (the bean carries no key),
