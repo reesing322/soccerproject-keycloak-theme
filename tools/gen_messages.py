@@ -182,16 +182,20 @@ VERIFY_WAY_OUT = {
         "spVerifyWrongAddress": "Wrong address?",
         "spVerifyStartAgain": "Start again",
         "spVerifyStartAgainHint": "and create your club with the right one, under a new manager name.",
+        # Under the resend link while the cooldown runs (theme#43).
+        "spVerifyResendWait": "You can ask for a new link in {0} s.",
     },
     "nl": {
         "spVerifyWrongAddress": "Verkeerd adres?",
         "spVerifyStartAgain": "Begin opnieuw",
         "spVerifyStartAgainHint": "en maak je club aan met het juiste, onder een nieuwe managernaam.",
+        "spVerifyResendWait": "Over {0} s kun je een nieuwe link aanvragen.",
     },
     "cs": {
         "spVerifyWrongAddress": "Špatná adresa?",
         "spVerifyStartAgain": "Začni znovu",
         "spVerifyStartAgainHint": "a založ si klub se správnou adresou, pod novým jménem manažera.",
+        "spVerifyResendWait": "Nový odkaz si můžeš vyžádat za {0} s.",
     },
 }
 

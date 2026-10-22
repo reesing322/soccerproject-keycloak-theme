@@ -25,7 +25,7 @@ it is the landing page's own composition, palette and type:
 | the puppet mark | `public/puppet-white.png`, byte-identical |
 
 When the landing page's handoff changes, change it there first and mirror it in
-`themes/soccerproject/login/resources/css/sp-login.v8.css`. Do not tune those
+`themes/soccerproject/login/resources/css/sp-login.v9.css`. Do not tune those
 values by eye.
 
 **No dark mode, and no theme toggle.** The landing page pins its palette and
@@ -82,6 +82,21 @@ template, picking up this design through the `properties.kc*Class` hooks that
 `login/theme.properties` maps onto our class names. That is the supported
 theming mechanism, and it means a Keycloak upgrade cannot leave a page we forgot
 to fork rendering unstyled.
+
+One macro file is forked as well: `password-commons.ftl`, whose "sign out from
+other devices" checkbox the base update-password page draws even when a new
+account chooses its first password (theme#43). It is hidden only when
+Keycloak's own warning on that page is `updatePasswordMessage`, which it shows
+when UPDATE_PASSWORD sits on the user, as sign-up leaves it; a reset or a
+change from the account console keeps it.
+
+The verify-email page keeps its resend link disabled while Keycloak's resend
+cooldown runs (theme#43). `spVerifyResendCooldown` in `login/theme.properties`
+has to match the realm's VERIFY_EMAIL "Cooldown Between Email Resend".
+
+Every control is at least 44px on a phone (theme#43). Inline links grow
+their hit area with padding and give the space back with a negative margin,
+so text does not move. Check a new control at 375px wide.
 
 `idp-commons.ftl` holds what the two forked sign-in pages share: the identity-provider
 buttons (with inline brand marks, since no icon font is loaded) and the "two
@@ -206,7 +221,7 @@ and last names should give them a `pattern` that rejects those characters.
 
 Keycloak serves theme resources with a 30-day cache header and the URL does not
 change when a file's *content* does. After editing the CSS, rename it
-(`sp-login.v8.css` → `v9`) and update `styles=` in `login/theme.properties`.
+(`sp-login.v9.css` → `v10`) and update `styles=` in `login/theme.properties`.
 
 The favicons are cache-busted with a `?v=` query instead, because
 `template.ftl` writes those URLs itself — bump the four `?v=` in its `<head>`.
