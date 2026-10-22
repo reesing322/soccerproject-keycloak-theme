@@ -922,7 +922,12 @@ input.kc-btn {
   display: none;
 }
 
-/* The reassurance line at the foot of the register page. */
+/* The register page's provider list, which sits above the form rather than
+   under it, and the reassurance line under its submit button. */
+.sp-social--lead {
+  margin-top: 20px;
+}
+
 .sp-reassure {
   margin: 16px 0 0;
   font-size: 13px;
