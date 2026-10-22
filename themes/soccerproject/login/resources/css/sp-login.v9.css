@@ -1651,3 +1651,33 @@ a[aria-disabled="true"] {
   text-decoration: none;
   cursor: default;
 }
+
+/* Password rules tick as they are met (theme#41). */
+.sp-rules .sp-rule__done,
+.sp-rules li.is-met .sp-rule__todo {
+  display: none;
+}
+
+.sp-rules li.is-met .sp-rule__done {
+  display: block;
+  color: var(--sp-good);
+}
+
+.sp-rules li.is-met {
+  color: var(--sp-navy-start);
+}
+
+/* The pressed submit while the request runs (theme#41): a spinner and no
+   second press. A background image, not ::after, because Keycloak's own pages
+   submit with <input type="submit">, which draws no pseudo-elements. The SVG
+   turns itself (SMIL), in the navy ink both button variants use. */
+.sp-btn.is-busy,
+.kc-btn.is-busy {
+  pointer-events: none;
+  cursor: progress;
+  padding-inline-end: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b1b2e' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M12 3a9 9 0 1 0 9 9'%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 12 12' to='360 12 12' dur='0.8s' repeatCount='indefinite'/%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+  background-size: 18px 18px;
+}

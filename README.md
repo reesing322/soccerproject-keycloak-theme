@@ -92,6 +92,15 @@ The verify-email page keeps its resend link disabled while Keycloak's resend
 cooldown runs (theme#43). `spVerifyResendCooldown` in `login/theme.properties`
 has to match the realm's VERIFY_EMAIL "Cooldown Between Email Resend".
 
+The password rules (`spPasswordRules` in `template.ftl`, on register and
+on the choose-password page) tick as the visitor types, and a submit that
+would break one stops in the browser with Keycloak's own message for that
+rule (theme#41). Keycloak would wipe both fields and, because it compares the
+two before the policy, report a short password as "Passwords don't match".
+The checks mirror the policy kinds the `passwordPolicies` bean carries;
+history and blacklist stay server-only. Every form in the card also shows a
+spinner on its pressed button and takes no second submit.
+
 Every control is at least 44px on a phone (theme#43). Inline links grow
 their hit area with padding and give the space back with a negative margin,
 so text does not move. Check a new control at 375px wide.
