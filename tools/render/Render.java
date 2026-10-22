@@ -256,6 +256,13 @@ public class Render {
             Collections.<String>emptySet()});
         cases.add(new Object[]{"register.ftl", "register-clean",
             Map.of("auth", quietAuth, "message", Map.of()), Collections.<String>emptySet()});
+        // No password on the form: the password is chosen after the email is
+        // verified (UPDATE_PASSWORD), as the development realm signs up (theme#43).
+        Map<String, Object> noPassword = new HashMap<>();
+        noPassword.put("auth", quietAuth);
+        noPassword.put("message", Map.of());
+        noPassword.put("passwordRequired", null);
+        cases.add(new Object[]{"register.ftl", "register-no-password", noPassword, Collections.<String>emptySet()});
         cases.add(new Object[]{"register.ftl", "register-error",
             Map.of("message", Map.of("type", "error", "summary", "Please check your details.")),
             Set.of("global", "email", "password", "password-confirm")});
@@ -355,6 +362,29 @@ public class Render {
         cases.add(new Object[]{"login-page-expired.ftl", "page-expired-no-baseurl",
             Map.of("auth", quietAuth, "message", Map.of(), "client", bareClient), Collections.<String>emptySet()});
 
+        // Choose-password page (theme#43): "sign out other devices" only where
+        // there can be other devices. Keycloak's warning tells the two apart.
+        cases.add(new Object[]{"login-update-password.ftl", "update-password-sign-up",
+            Map.of("auth", quietAuth, "message", Map.of("type", "warning", "summary",
+                messages.getProperty("updatePasswordMessage", "updatePasswordMessage"))),
+            Collections.<String>emptySet()});
+        cases.add(new Object[]{"login-update-password.ftl", "update-password-reset",
+            Map.of("auth", quietAuth, "message", Map.of("type", "warning", "summary",
+                messages.getProperty("resetPasswordMessage", "resetPasswordMessage"))),
+            Collections.<String>emptySet()});
+        // Resend inside Keycloak's cooldown (theme#43): a countdown from the
+        // seconds in the error, not the red alert.
+        cases.add(new Object[]{"login-verify-email.ftl", "verify-email-cooldown",
+            Map.of("auth", quietAuth, "message", Map.of("type", "error", "summary", new MessageFormat(
+                messages.getProperty("emailVerifySendCooldown", "{0}"), Locale.ENGLISH).format(new Object[]{6L}))),
+            Collections.<String>emptySet()});
+        // label -> {needle, "1" if the page must contain it, "0" if it must not}
+        Map<String, String[]> contains = new HashMap<>();
+        contains.put("update-password-sign-up", new String[]{"id=\"logout-sessions\"", "0"});
+        contains.put("update-password-reset", new String[]{"id=\"logout-sessions\"", "1"});
+        contains.put("verify-email-cooldown", new String[]{"data-wait=\"6\"", "1"});
+        contains.put("inherited-login-verify-email", new String[]{"data-wait=\"30\"", "1"});
+
         new File(outDir).mkdirs();
         for (Object[] c : cases) {
             String tpl = (String) c[0], label = (String) c[1];
@@ -401,6 +431,9 @@ public class Render {
                     String got = m.find() ? m.group(1) : "";
                     if (!got.equals(want)) throw new IllegalStateException("continue href " + got + ", want " + want);
                 }
+                String[] needle = contains.get(label);
+                if (needle != null && html.contains(needle[0]) != "1".equals(needle[1]))
+                    throw new IllegalStateException(("1".equals(needle[1]) ? "missing " : "unexpected ") + needle[0]);
                 System.out.printf("OK    %-34s %6d bytes%n", label, html.length());
             } catch (Exception e) {
                 failures++;

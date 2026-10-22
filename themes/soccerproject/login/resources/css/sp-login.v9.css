@@ -922,12 +922,7 @@ input.kc-btn {
   display: none;
 }
 
-/* The register page's provider list, which sits above the form rather than
-   under it, and the reassurance line under its submit button. */
-.sp-social--lead {
-  margin-top: 20px;
-}
-
+/* The reassurance line at the foot of the register page. */
 .sp-reassure {
   margin: 16px 0 0;
   font-size: 13px;
@@ -1595,4 +1590,59 @@ input.kc-btn {
     box-shadow: none;
     max-width: none;
   }
+}
+
+/* ------------------------------------------------------------ tap targets -- */
+/* 44px on a phone (theme#43, WCAG 2.5.5, Apple HIG). Inline links keep their
+   place in the text: the padding grows the hit area, the equal negative
+   margin gives the space back, so no line moves. */
+.sp-lang__btn {
+  height: 44px;
+  min-width: 44px;
+}
+
+.sp-card a:not(.sp-btn):not([id^="social-"]),
+.sp-footer a {
+  display: inline-block;
+  padding: 14px 8px;
+  margin: -14px -8px;
+}
+
+.sp-footer a {
+  line-height: 20px;
+  padding-block: 12px;
+  margin-block: -12px;
+}
+
+.sp-linkbtn,
+.kc-btn--link {
+  min-height: 44px;
+}
+
+/* Checkboxes: a larger box, and the whole row is the target. Our own
+   remember-me wraps its input in the label; Keycloak's terms checkbox sits
+   beside a label[for]; its "sign out other devices" wraps, unclassed. */
+.sp-check input,
+.kc-checkbox-input,
+.kc-check-input,
+.kc-form-options .checkbox input {
+  width: 22px;
+  height: 22px;
+}
+
+.sp-check,
+.kc-form-options .checkbox label,
+.kc-checkbox-input + label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+/* The verify-email resend link while Keycloak's cooldown runs (theme#43). */
+a[aria-disabled="true"] {
+  color: var(--sp-text-muted);
+  text-decoration: none;
+  cursor: default;
 }

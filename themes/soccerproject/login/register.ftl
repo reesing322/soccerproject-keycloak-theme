@@ -8,9 +8,10 @@
   acceptance and both reCAPTCHA modes are unchanged, and the form still posts to
   `url.registrationAction` with the same field names. What changes:
 
-    * the social buttons are ON this page, and above the form. #725's ask is
+    * the social buttons are ON this page, under the form. #725's ask is
       that a new player can see that a Google or Facebook account works — on
-      the base page they are only ever shown one door, the email one.
+      the base page they are only ever shown one door, the email one. They
+      were above the form until theme#43 put the email submit back in view.
     * a lead paragraph states both routes in words, so the choice does not
       depend on recognising two logos.
     * password fields get the theme's own reveal control, the same one login.ftl
@@ -60,24 +61,6 @@
         <p class="sp-card__subtitle">
             <#if spHasSocial>${msg("spRegisterLead")}<#else>${msg("spRegisterLeadEmailOnly")}</#if>
         </p>
-
-        <#-- Fast path first: one click, no password to invent. -->
-        <#if spHasSocial>
-            <ul class="sp-social sp-social--lead<#if (social.providers?size gt 2)> sp-social--grid</#if>">
-                    <#list social.providers as p>
-                        <li>
-                            <a id="social-${p.alias}" href="${p.loginUrl}" rel="nofollow">
-                                <@idp.idpIcon provider=p/>
-                                <span class="sp-social__name">${msg("spContinueWith", (p.displayName!p.alias))}</span>
-                            </a>
-                        </li>
-                    </#list>
-            </ul>
-            <#-- Not "or" here but the full sentence: this divider is the moment
-                 the visitor decides which of the two routes to take, and #725
-                 asks for the email route to be stated, not implied. -->
-            <div class="sp-or">${msg("spOrUseEmail")}</div>
-        </#if>
 
         <p class="sp-required-hint"><span class="req">*</span> ${msg("requiredFields")}</p>
 
@@ -178,6 +161,25 @@
             </div>
         </form>
 
+        <#-- The providers, under the form (theme#43). Above it they put the
+             email submit below the fold on a phone and at 1366x768, for the
+             visitor who arrives from the landing page with an address already
+             typed. The lead above still names both routes, so neither depends
+             on scrolling to the logos. -->
+        <#if spHasSocial>
+            <div class="sp-or">${msg("spOrSignUpWith")}</div>
+            <ul class="sp-social<#if (social.providers?size gt 2)> sp-social--grid</#if>">
+                    <#list social.providers as p>
+                        <li>
+                            <a id="social-${p.alias}" href="${p.loginUrl}" rel="nofollow">
+                                <@idp.idpIcon provider=p/>
+                                <span class="sp-social__name">${msg("spContinueWith", (p.displayName!p.alias))}</span>
+                            </a>
+                        </li>
+                    </#list>
+            </ul>
+        </#if>
+
         <#-- ===== login_hint lands in the wrong field (frontend#735) =====
 
              A visitor types their address on the landing page and presses
@@ -237,8 +239,8 @@
         <p class="sp-reassure">${msg("spRegisterFoot")}</p>
 
     <#-- The IdP section stays empty: on this page the providers are rendered
-         above the form (see "form"), because here they are the fast path
-         rather than an alternative to a password the visitor already has. -->
+         inside "form", directly under the form and above the reassurance,
+         not after it in the template's own slot. -->
     <#elseif section = "socialProviders">
 
     <#-- ===== Back to sign-in ===== -->
