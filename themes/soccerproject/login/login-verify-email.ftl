@@ -32,6 +32,8 @@
             </#if>
         </p>
         <#if !(isAppInitiatedAction!false)>
+            <#-- theme#38: the password step after the link was a surprise. -->
+            <p class="instruction">${msg("spVerifyPasswordNext")}</p>
             <#-- theme#12: the mail link opens in a NEW tab and strands this one. -->
             <p class="instruction">${msg("spVerifyOtherTab")}</p>
         </#if>

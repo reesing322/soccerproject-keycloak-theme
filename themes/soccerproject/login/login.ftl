@@ -10,6 +10,14 @@
 <#import "idp-commons.ftl" as idp>
 <#assign spHasSocial = realm.password && social?? && social.providers?? && social.providers?has_content>
 <#assign spCanRegister = realm.password && realm.registrationAllowed && !registrationDisabled??>
+<#-- theme#39: an account that signed up but never followed the mail link has
+     no password, so its login fails as "invalid". Under that one error, a way to
+     get a link mailed again: reset-credentials works without a password and
+     marks the address verified. Matched on the formatted text, as Keycloak's
+     bean carries no key. -->
+<#assign spNoPasswordHint = realm.resetPasswordAllowed
+    && messagesPerField.existsError('username','password')
+    && messagesPerField.getFirstError('username','password') == msg("invalidUserMessage")>
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=spCanRegister; section>
 
     <#-- ===== Card heading ===== -->
@@ -63,6 +71,11 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
                             <span>${kcSanitize(messagesPerField.getFirstError('username','password'))?no_esc}</span>
                         </span>
+                    </#if>
+                    <#if spNoPasswordHint>
+                        <p id="sp-no-password" class="kc-helper-after">
+                            ${msg("spNoPasswordYet")} <a class="sp-link" href="${url.loginResetCredentialsUrl}">${msg("spGetNewLink")}</a>
+                        </p>
                     </#if>
                 </div>
 

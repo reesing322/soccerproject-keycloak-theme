@@ -50,7 +50,7 @@ always shows its why-line and privacy link (the backend shows the why-line only
 on opt-out mail and drops the privacy link when its URL is unset); and an
 MSO-only 600px wrapper, since Word-based Outlook ignores `max-width`.
 
-## Only six templates are forked
+## Only seven templates are forked
 
 `login.ftl`, `register.ftl` and `login-reset-password.ftl` — the last one only
 because the base page renders its instruction *below* the submit button it is
@@ -58,14 +58,16 @@ meant to introduce (frontend#736) — `login-verify-email.ftl`, only to add two
 lines: close the stale tab (theme#12), and a "Start again" link for a mistyped
 address (theme#36: Keycloak's restart-flow URL, because the address cannot be
 changed on that page and the account console stays blocked until it is
-verified); and `info.ftl` and `login-page-expired.ftl` (theme#24). Those
-two are where a verify-email link opened in a second browser (iOS Mail → Safari)
-ends: Keycloak cannot resume the sign-up there, and the stock pages offer only
-"« Back to Application" or links that restart Keycloak's own login. The forks
-put one primary button to the client's `baseUrl` on both, so they depend on the
-realm giving `soccerproject-frontend` a `baseUrl`; without one the expired page
-is stock and the email-verified page shows its title with no button (stock
-shows no link there either). On the email-verified page (fresh or already
+verified); and `info.ftl`, `login-page-expired.ftl` (theme#24) and
+`error.ftl` (theme#40). Those three are where a verify-email link ends when it
+is opened in a second browser (iOS Mail → Safari) or opened again after use:
+Keycloak cannot resume the sign-up there, and the stock pages offer only
+"« Back to Application", "Action expired" or links that restart Keycloak's own
+login. The forks put one primary button into the app on all three: the
+client's `baseUrl`, or this environment's own site (the masthead link,
+`spAppUrl` in `template.ftl`) when the client has none — and the realm config
+sets none on `soccerproject-frontend`, which is why the page-expired and
+email-verified pages had nothing to click (theme#40). On the email-verified page (fresh or already
 verified) that button carries `verified=1` (theme#29), so the app's landing page can tell this visitor from a
 cold one. `info.ftl` recognises the email-verified case by comparing
 `message.summary` with `msg("emailVerifiedMessage")` (the bean carries no key),
@@ -100,6 +102,16 @@ two before the policy, report a short password as "Passwords don't match".
 The checks mirror the policy kinds the `passwordPolicies` bean carries;
 history and blacklist stay server-only. Every form in the card also shows a
 spinner on its pressed button and takes no second submit.
+
+With "Verify email" on, Keycloak leaves the password off the register form and
+asks for it after the mail link, so until that click the account exists
+without one (theme#38, #39). The register form says so above its button when
+it has no password field, as do the verify-email page and the mail. Signing up
+again then fails as "taken" and logging in as "invalid"; under exactly those
+errors (matched on the formatted `invalidUserMessage`, `emailExistsMessage`,
+`usernameExistsMessage`) both pages link to Keycloak's reset-credentials flow,
+which mails a link to an account with no password too and marks the address
+verified when it is followed. It needs `resetPasswordAllowed` on the realm.
 
 Every control is at least 44px on a phone (theme#43). Inline links grow
 their hit area with padding and give the space back with a negative margin,
@@ -213,6 +225,16 @@ fields a new manager is asked for, change the realm — and note that
 keycloak-config-cli only applies that block when the realm also sets
 `attributes.userProfileEnabled`, silently keeping Keycloak's built-in default
 profile (username, email, firstName, lastName) when it does not.
+
+`register.ftl` adds two things around those fields (theme#42), neither of
+which replaces a realm validator. The manager name shows its rule under the
+field, read from the attribute's own `length` validator (and its `pattern`,
+when that is the realm's `^[\p{L}\p{N} ]+$`), so the realm stays the source.
+And on submit every text field loses its outer whitespace and any zero-width
+or bidi control character, so a pasted address with a trailing space passes
+and a name of invisible characters arrives empty. With JS off, or through any
+other client, only the realm's validators apply: a realm that asks for first
+and last names should give them a `pattern` that rejects those characters.
 
 ## Cache busting
 

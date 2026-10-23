@@ -35,6 +35,11 @@
 <#assign spFirstRender = !(messagesPerField.exists('global')
     || messagesPerField.existsError('username','email','password','password-confirm','termsAccepted')
     || (message?? && message?has_content))>
+<#-- The manager name or the address is already taken (theme#39). Matched on
+     the formatted text, as messagesPerField carries no key. -->
+<#assign spTaken = realm.resetPasswordAllowed
+    && ((messagesPerField.existsError('email') && messagesPerField.get('email') == msg("emailExistsMessage"))
+     || (messagesPerField.existsError('username') && messagesPerField.get('username') == msg("usernameExistsMessage")))>
 <#-- displayInfo=true: the "back to sign in" link lives in the card footer
      here, not inside the form's options row as on the base page. -->
 <#-- displayRequiredFields=false: the hint is rendered by this page, directly
@@ -83,8 +88,32 @@
 
         <form id="kc-register-form" class="sp-form" action="${url.registrationAction}" method="post">
 
-            <#-- The profile's own fields first, in the realm's declared order. -->
-            <@userProfileCommons.userProfileFormFields/>
+            <#-- The profile's own fields first, in the realm's declared order.
+
+                 Under the manager name, its rule (theme#42): the pattern and
+                 length validators otherwise only ever answer "Invalid value."
+                 after a submit. Read from the realm's own validators, so the
+                 hint follows the realm; the character half is printed only for
+                 the pattern it describes, and no length validator means no
+                 hint. The script at the bottom moves it into the field and
+                 points aria-describedby at it. -->
+            <@userProfileCommons.userProfileFormFields; callback, attribute>
+                <#if callback = "afterField" && attribute.name == "username">
+                    <#assign spLen = (attribute.validators.length)!{}>
+                    <#if spLen.min?? && spLen.max??>
+                        <#assign spPattern = (attribute.validators.pattern.pattern)!"">
+                        <p id="sp-username-rule" class="kc-helper-after"><#if spPattern == "^[\\p{L}\\p{N} ]+$">${msg("spManagerNameRule", spLen.min, spLen.max)}<#else>${msg("spManagerNameRuleLength", spLen.min, spLen.max)}</#if></p>
+                    </#if>
+                </#if>
+                <#-- theme#39: "taken" is also what an account that never
+                     followed its mail link gets when it signs up again. Under the
+                     email field, the same way out as on the login page. -->
+                <#if callback = "afterField" && attribute.name == "email" && spTaken>
+                    <p id="sp-no-password" class="kc-helper-after">
+                        ${msg("spNoPasswordYet")} <a class="sp-link" href="${url.loginResetCredentialsUrl}">${msg("spGetNewLink")}</a>
+                    </p>
+                </#if>
+            </@userProfileCommons.userProfileFormFields>
 
             <#-- Then the password pair.
 
@@ -161,6 +190,13 @@
                 </div>
             </#if>
 
+            <#-- theme#38: with "Verify email" on, Keycloak leaves the password
+                 off this form and asks for it after the mail link. Say so
+                 before the button, not after the surprise. -->
+            <#if !passwordRequired??>
+                <p id="sp-password-later" class="kc-helper-after">${msg("spRegisterPasswordLater")}</p>
+            </#if>
+
             <div class="kc-form-buttons">
                 <#if recaptchaRequired?? && !(recaptchaVisible!false)>
                     <script>
@@ -230,6 +266,39 @@
           })();
         </script>
         </#if>
+
+        <#-- ===== Pasted input (theme#42) =====
+
+             A pasted address with a space either side failed as "Invalid email
+             address", and names made of zero-width or bidi control characters,
+             or of spaces only, were accepted. On submit, every text field the
+             profile renders loses those invisible characters and its outer
+             whitespace; a name left empty then gets Keycloak's own "please
+             specify" error. The manager name gets a maxlength from its rule,
+             so 5000 pasted characters do not wait for the server to say no.
+
+             Not a validator: the realm still decides (see the README), and with
+             JS off the form posts what was typed, as before. -->
+        <script>
+          (function () {
+            var form = document.getElementById('kc-register-form');
+            if (!form) return;
+            var invisible = /[\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/g;
+            var rule = document.getElementById('sp-username-rule');
+            var username = document.getElementById('username');
+            if (rule && username) {
+              username.parentNode.appendChild(rule);
+              username.setAttribute('aria-describedby', rule.id);
+              username.setAttribute('maxlength', '${(spLen.max)!""}');
+            }
+            form.addEventListener('submit', function () {
+              Array.prototype.forEach.call(form.querySelectorAll('input[type="text"], input[type="email"], input:not([type])'), function (input) {
+                var clean = input.value.replace(invisible, '').trim();
+                if (clean !== input.value) input.value = clean;
+              });
+            });
+          })();
+        </script>
 
         <#-- What happens next, and the reassurance that nothing is being asked
              for beyond an address. Kept below the button: it answers an
