@@ -25,7 +25,7 @@ it is the landing page's own composition, palette and type:
 | the puppet mark | `public/puppet-white.png`, byte-identical |
 
 When the landing page's handoff changes, change it there first and mirror it in
-`themes/soccerproject/login/resources/css/sp-login.v9.css`. Do not tune those
+`themes/soccerproject/login/resources/css/sp-login.v10.css`. Do not tune those
 values by eye.
 
 **No dark mode, and no theme toggle.** The landing page pins its palette and
@@ -93,6 +93,15 @@ change from the account console keeps it.
 The verify-email page keeps its resend link disabled while Keycloak's resend
 cooldown runs (theme#43). `spVerifyResendCooldown` in `login/theme.properties`
 has to match the realm's VERIFY_EMAIL "Cooldown Between Email Resend".
+
+The password rules (`spPasswordRules` in `template.ftl`, on register and
+on the choose-password page) tick as the visitor types, and a submit that
+would break one stops in the browser with Keycloak's own message for that
+rule (theme#41). Keycloak would wipe both fields and, because it compares the
+two before the policy, report a short password as "Passwords don't match".
+The checks mirror the policy kinds the `passwordPolicies` bean carries;
+history and blacklist stay server-only. Every form in the card also shows a
+spinner on its pressed button and takes no second submit.
 
 With "Verify email" on, Keycloak leaves the password off the register form and
 asks for it after the mail link, so until that click the account exists
@@ -231,7 +240,7 @@ and last names should give them a `pattern` that rejects those characters.
 
 Keycloak serves theme resources with a 30-day cache header and the URL does not
 change when a file's *content* does. After editing the CSS, rename it
-(`sp-login.v9.css` → `v10`) and update `styles=` in `login/theme.properties`.
+(`sp-login.v10.css` → `v11`) and update `styles=` in `login/theme.properties`.
 
 The favicons are cache-busted with a `?v=` query instead, because
 `template.ftl` writes those URLs itself — bump the four `?v=` in its `<head>`.

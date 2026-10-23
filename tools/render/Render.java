@@ -441,6 +441,8 @@ public class Render {
         contains.put("update-password-reset", new String[]{"id=\"logout-sessions\"", "1"});
         contains.put("verify-email-cooldown", new String[]{"data-wait=\"6\"", "1"});
         contains.put("inherited-login-verify-email", new String[]{"data-wait=\"30\"", "1"});
+        // Each rule carries its check and Keycloak's message for it (theme#41).
+        contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 
         new File(outDir).mkdirs();
         for (Object[] c : cases) {

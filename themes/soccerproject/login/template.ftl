@@ -362,6 +362,123 @@
       document.addEventListener('click', function (e) { if (!lang.contains(e.target)) close(false); });
     }
 
+    // ---- Password rules: live, and checked before the round trip (theme#41) ----
+    // Keycloak wipes both fields on any error and checks "do they match" before
+    // the policy, so a short password came back, empty, as "Passwords don't
+    // match" -- after a 20-30 s request on development. Here each rule ticks as
+    // it is met, and a submit that would fail stops in the browser with the
+    // first failing rule's own Keycloak message, the fields kept. The checks
+    // mirror Keycloak's policies (Character.isLowerCase and friends); the
+    // server still decides, and history and blacklist are left to it.
+    var rules = document.getElementById('sp-password-rules');
+    var pass = document.getElementById('password-new') || document.getElementById('password');
+    if (rules && pass && pass.form) {
+      var confirm = document.getElementById('password-confirm');
+      if (!pass.getAttribute('aria-describedby')) pass.setAttribute('aria-describedby', rules.id);
+      var count = function (v, re) { return (v.match(re) || []).length; };
+      var other = function (id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+      var checks = {
+        length: function (v, n) { return Array.from(v).length >= n; },
+        maxLength: function (v, n) { return Array.from(v).length <= n; },
+        lowerCase: function (v, n) { return count(v, /\p{Ll}/gu) >= n; },
+        upperCase: function (v, n) { return count(v, /\p{Lu}/gu) >= n; },
+        digits: function (v, n) { return count(v, /\p{Nd}/gu) >= n; },
+        specialChars: function (v, n) { return count(v, /[^\p{L}\p{Nd}]/gu) >= n; },
+        notUsername: function (v) {
+          // The register form's own field first; update-password has only the model's.
+          var u = other('username') || rules.getAttribute('data-username');
+          return !v || !u || v.toLowerCase() !== u.toLowerCase();
+        },
+        notEmail: function (v) {
+          var e = other('email');
+          return !v || !e || v.toLowerCase() !== e.toLowerCase();
+        }
+      };
+      var items = Array.prototype.slice.call(rules.querySelectorAll('li[data-rule]'));
+      var failing = function () {
+        var v = pass.value, first = null;
+        items.forEach(function (li) {
+          var check = checks[li.getAttribute('data-rule')];
+          var met = !check || check(v, parseInt(li.getAttribute('data-n'), 10));
+          li.classList.toggle('is-met', met && v.length > 0);
+          if (!met && !first) first = li;
+        });
+        return first;
+      };
+      var showError = function (input, text) {
+        var id = 'sp-client-error-' + input.id;
+        var el = document.getElementById(id);
+        if (!text) { if (el) el.remove(); input.removeAttribute('aria-invalid'); return; }
+        if (!el) {
+          el = document.createElement('span');
+          el.id = id;
+          el.className = 'kc-field-error';
+          el.setAttribute('aria-live', 'polite');
+          // Under the input's own wrapper, where Keycloak puts its error.
+          var wrap = input.closest('.sp-input-wrap, .kc-input-wrap') || input;
+          wrap.parentNode.insertBefore(el, wrap.nextSibling);
+        }
+        el.textContent = text;
+        input.setAttribute('aria-invalid', 'true');
+      };
+      pass.addEventListener('input', function () {
+        failing();
+        showError(pass, '');
+      });
+      if (confirm) confirm.addEventListener('input', function () { showError(confirm, ''); });
+      failing();
+      pass.form.addEventListener('submit', function (e) {
+        // The account console's Cancel posts this form too, and must go through.
+        if (e.submitter && e.submitter.name === 'cancel-aia') return;
+        var bad = failing();
+        if (bad) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          showError(pass, bad.getAttribute('data-error'));
+          pass.focus();
+          return;
+        }
+        if (confirm && confirm.value !== pass.value) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          showError(confirm, rules.getAttribute('data-not-match'));
+          confirm.focus();
+        }
+      }, true);
+    }
+
+    // ---- Busy state on submit (theme#41) ----
+    // A slow request (20-36 s on development) left the page looking dead and
+    // the button clickable. The pressed button shows a spinner and the form
+    // takes no second submit. The button is not disabled: a disabled submitter
+    // drops its own name/value from the post, and Keycloak reads some of them
+    // (cancel-aia). Back/forward cache restores the page as it was left, busy,
+    // so pageshow clears it.
+    Array.prototype.forEach.call(document.querySelectorAll('.sp-card form'), function (form) {
+      form.addEventListener('submit', function (e) {
+        if (e.defaultPrevented) return;
+        if (form.getAttribute('data-sp-busy')) { e.preventDefault(); return; }
+        form.setAttribute('data-sp-busy', '1');
+        var btn = e.submitter || form.querySelector('[type="submit"]');
+        if (btn) {
+          btn.classList.add('is-busy');
+          btn.setAttribute('aria-disabled', 'true');
+        }
+        form.setAttribute('aria-busy', 'true');
+      });
+    });
+    window.addEventListener('pageshow', function (e) {
+      if (!e.persisted) return;
+      Array.prototype.forEach.call(document.querySelectorAll('[data-sp-busy]'), function (form) {
+        form.removeAttribute('data-sp-busy');
+        form.removeAttribute('aria-busy');
+        Array.prototype.forEach.call(form.querySelectorAll('.is-busy'), function (b) {
+          b.classList.remove('is-busy');
+          b.removeAttribute('aria-disabled');
+        });
+      });
+    });
+
     // ---- Password reveal (progressive enhancement) ----
     // Our own forms use [data-sp-eye]; inherited base pages use Keycloak's
     // [data-password-toggle] and its own passwordVisibility.js, which this must
@@ -395,28 +512,35 @@
   yet.
 -->
 <#macro spPasswordRules>
+  <#-- Each rule carries what the script below checks (theme#41): its kind, its
+       number, and Keycloak's own message for it, so a rule the password breaks
+       is named before the submit, in the words the server would use. -->
   <#assign spRules = []>
   <#if passwordPolicies??>
-    <#if (passwordPolicies.length)??><#assign spRules += [msg("spPasswordRuleLength", passwordPolicies.length)]></#if>
-    <#if (passwordPolicies.maxLength)??><#assign spRules += [msg("spPasswordRuleMaxLength", passwordPolicies.maxLength)]></#if>
-    <#if (passwordPolicies.lowerCase)??><#assign spRules += [msg("spPasswordRuleLowerCase", passwordPolicies.lowerCase)]></#if>
-    <#if (passwordPolicies.upperCase)??><#assign spRules += [msg("spPasswordRuleUpperCase", passwordPolicies.upperCase)]></#if>
-    <#if (passwordPolicies.digits)??><#assign spRules += [msg("spPasswordRuleDigits", passwordPolicies.digits)]></#if>
-    <#if (passwordPolicies.specialChars)??><#assign spRules += [msg("spPasswordRuleSpecialChars", passwordPolicies.specialChars)]></#if>
-    <#if (passwordPolicies.notUsername)!false><#assign spRules += [msg("spPasswordRuleNotUsername")]></#if>
-    <#if (passwordPolicies.notEmail)!false><#assign spRules += [msg("spPasswordRuleNotEmail")]></#if>
-    <#if (passwordPolicies.passwordHistory)??><#assign spRules += [msg("spPasswordRuleHistory", passwordPolicies.passwordHistory)]></#if>
+    <#if (passwordPolicies.length)??><#assign spRules += [{"text": msg("spPasswordRuleLength", passwordPolicies.length), "kind": "length", "n": passwordPolicies.length, "error": msg("invalidPasswordMinLengthMessage", passwordPolicies.length)}]></#if>
+    <#if (passwordPolicies.maxLength)??><#assign spRules += [{"text": msg("spPasswordRuleMaxLength", passwordPolicies.maxLength), "kind": "maxLength", "n": passwordPolicies.maxLength, "error": msg("invalidPasswordMaxLengthMessage", passwordPolicies.maxLength)}]></#if>
+    <#if (passwordPolicies.lowerCase)??><#assign spRules += [{"text": msg("spPasswordRuleLowerCase", passwordPolicies.lowerCase), "kind": "lowerCase", "n": passwordPolicies.lowerCase, "error": msg("invalidPasswordMinLowerCaseCharsMessage", passwordPolicies.lowerCase)}]></#if>
+    <#if (passwordPolicies.upperCase)??><#assign spRules += [{"text": msg("spPasswordRuleUpperCase", passwordPolicies.upperCase), "kind": "upperCase", "n": passwordPolicies.upperCase, "error": msg("invalidPasswordMinUpperCaseCharsMessage", passwordPolicies.upperCase)}]></#if>
+    <#if (passwordPolicies.digits)??><#assign spRules += [{"text": msg("spPasswordRuleDigits", passwordPolicies.digits), "kind": "digits", "n": passwordPolicies.digits, "error": msg("invalidPasswordMinDigitsMessage", passwordPolicies.digits)}]></#if>
+    <#if (passwordPolicies.specialChars)??><#assign spRules += [{"text": msg("spPasswordRuleSpecialChars", passwordPolicies.specialChars), "kind": "specialChars", "n": passwordPolicies.specialChars, "error": msg("invalidPasswordMinSpecialCharsMessage", passwordPolicies.specialChars)}]></#if>
+    <#if (passwordPolicies.notUsername)!false><#assign spRules += [{"text": msg("spPasswordRuleNotUsername"), "kind": "notUsername", "n": 0, "error": msg("invalidPasswordNotUsernameMessage")}]></#if>
+    <#if (passwordPolicies.notEmail)!false><#assign spRules += [{"text": msg("spPasswordRuleNotEmail"), "kind": "notEmail", "n": 0, "error": msg("invalidPasswordNotEmailMessage")}]></#if>
+    <#-- History cannot be checked here: listed, left to the server. -->
+    <#if (passwordPolicies.passwordHistory)??><#assign spRules += [{"text": msg("spPasswordRuleHistory", passwordPolicies.passwordHistory), "kind": "", "n": 0, "error": ""}]></#if>
   </#if>
   <#if spRules?has_content>
-    <div class="sp-ways sp-rules" id="sp-password-rules">
+    <div class="sp-ways sp-rules" id="sp-password-rules"
+         data-not-match="${msg("notMatchPasswordMessage")}"<#if username?? && username?is_string> data-username="${username}"</#if>>
       <p class="sp-ways__title">${msg("spPasswordRulesTitle")}</p>
       <ul class="sp-ways__list">
         <#list spRules as rule>
-          <li>
+          <li<#if rule.kind?has_content> data-rule="${rule.kind}" data-n="${rule.n?c}" data-error="${rule.error}"</#if>>
             <#-- A bullet, not the panel's tick: a tick beside a rule the
-                 password does not meet yet would read as "done". -->
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg>
-            <span>${rule}</span>
+                 password does not meet yet would read as "done". The tick
+                 replaces it once the password meets the rule. -->
+            <svg class="sp-rule__todo" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg>
+            <svg class="sp-rule__done" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            <span>${rule.text}</span>
           </li>
         </#list>
       </ul>
