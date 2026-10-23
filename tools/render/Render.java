@@ -52,6 +52,15 @@ public class Render {
         return m;
     }
 
+    /** perField whose errors carry one of the bundle's own messages (theme#39). */
+    static Map<String, Object> perField(Set<String> errors, String key) {
+        Map<String, Object> m = perField(errors);
+        TemplateMethodModelEx text = args -> messages.getProperty(key, key);
+        m.put("get", text);
+        m.put("getFirstError", text);
+        return m;
+    }
+
     static Map<String, Object> attribute(String name, String display, boolean required, String autocomplete) {
         Map<String, Object> a = new LinkedHashMap<>();
         a.put("name", name);
@@ -280,6 +289,16 @@ public class Render {
         cases.add(new Object[]{"register.ftl", "register-error",
             Map.of("message", Map.of("type", "error", "summary", "Please check your details.")),
             Set.of("global", "email", "password", "password-confirm")});
+        // theme#39: the account that never followed its mail link. Login fails
+        // as invalid, sign-up again as taken; both offer a new link.
+        cases.add(new Object[]{"login.ftl", "login-error-no-password",
+            Map.of("message", Map.of("type", "error", "summary", "x"),
+                   "messagesPerField", perField(Set.of("username", "password"), "invalidUserMessage")),
+            Set.of("username", "password")});
+        Map<String, Object> taken = new HashMap<>(noPassword);
+        taken.put("message", Map.of("type", "error", "summary", "x"));
+        taken.put("messagesPerField", perField(Set.of("email"), "emailExistsMessage"));
+        cases.add(new Object[]{"register.ftl", "register-email-taken", taken, Set.of("email")});
         cases.add(new Object[]{"register.ftl", "register-no-social",
             Map.of("social", Map.of("providers", new ArrayList<>())), Collections.<String>emptySet()});
         cases.add(new Object[]{"register.ftl", "register-terms",

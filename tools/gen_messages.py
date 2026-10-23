@@ -18,7 +18,7 @@ Two families of keys are written in every locale:
 
 Further sets go to some locales only, so the files are deliberately not all
 equal: EN_ONLY (en); MANAGER_NAME, VERIFY_OTHER_TAB, VERIFY_WAY_OUT, VERIFY_DEAD_END,
-SET_PASSWORD and PASSWORD_RULES (en, nl, cs); NL_JE (nl). The partial sets are listed in PARTIAL.
+SET_PASSWORD, NO_PASSWORD_YET and PASSWORD_RULES (en, nl, cs); NL_JE (nl). The partial sets are listed in PARTIAL.
 
 Dutch addresses the reader as "je", never "u" (theme#20): the game does, and
 the generator refuses a formal "u"/"uw" in any Dutch value.
@@ -114,7 +114,7 @@ MANAGER_NAME = {
         "username": "Manager name",
         "usernameOrEmail": "Manager name or email",
         "emailInstruction": "Enter your manager name or email address and we will send you instructions for setting a new password.",
-        "invalidUserMessage": "Invalid manager name or password.",
+        "invalidUserMessage": "Invalid manager name, email or password.",
         "invalidUsernameOrEmailMessage": "Invalid manager name or email.",
         "missingUsernameMessage": "Please enter your manager name.",
         "usernameExistsMessage": "That manager name is already taken. Please choose another.",
@@ -133,7 +133,7 @@ MANAGER_NAME = {
         "username": "Managernaam",
         "usernameOrEmail": "Managernaam of e-mailadres",
         "emailInstruction": "Vul je managernaam of e-mailadres in, dan sturen we je instructies om een nieuw wachtwoord in te stellen.",
-        "invalidUserMessage": "Ongeldige managernaam of wachtwoord.",
+        "invalidUserMessage": "Ongeldige managernaam, e-mailadres of wachtwoord.",
         "invalidUsernameOrEmailMessage": "Ongeldige managernaam of e-mailadres.",
         "missingUsernameMessage": "Voer je managernaam in.",
         "usernameExistsMessage": "Die managernaam is al bezet. Kies een andere.",
@@ -150,7 +150,7 @@ MANAGER_NAME = {
         "username": "Jméno manažera",
         "usernameOrEmail": "Jméno manažera nebo e-mail",
         "emailInstruction": "Zadej své jméno manažera nebo e-mailovou adresu a pošleme ti pokyny k nastavení nového hesla.",
-        "invalidUserMessage": "Neplatné jméno manažera nebo heslo.",
+        "invalidUserMessage": "Neplatné jméno manažera, e-mail nebo heslo.",
         "invalidUsernameOrEmailMessage": "Neplatné jméno manažera nebo e-mail.",
         "missingUsernameMessage": "Zadej své jméno manažera.",
         "usernameExistsMessage": "Toto jméno manažera je už obsazené. Zvol si jiné.",
@@ -445,6 +445,45 @@ NL_JE = {
     },
 }
 
+# The account that never chose a password (theme#38, #39). With "Verify email"
+# on, Keycloak drops the password from the register form and asks for it only
+# after the mail link. Until then the account exists without one, so signing
+# up again says "taken" and logging in says "invalid password".
+#
+#   * spRegisterPasswordLater -- above the register button, only when the form
+#     has no password field: says the link comes first and the password after.
+#   * spVerifyPasswordNext -- the same promise on the verify-email page.
+#   * spNoPasswordYet + spGetNewLink -- under a failed login and under "taken"
+#     on the register form, linking to Keycloak's reset-credentials flow. That
+#     flow mails a link to an account with no password too, and following it
+#     marks the address verified (ResetCredentialEmail.action, KC 26.7.1), so
+#     it is the resend the dead end was missing.
+#   * emailExistsMessage -- Keycloak's "Email already exists." in our voice.
+# English, Dutch and Czech, like MANAGER_NAME.
+NO_PASSWORD_YET = {
+    "en": {
+        "spRegisterPasswordLater": "We’ll email you a link. You choose your password there.",
+        "spVerifyPasswordNext": "New account? The link is where you choose your password.",
+        "spNoPasswordYet": "Created an account but no password yet?",
+        "spGetNewLink": "Get a new link",
+        "emailExistsMessage": "There is already an account with this email address.",
+    },
+    "nl": {
+        "spRegisterPasswordLater": "We mailen je een link. Daar kies je je wachtwoord.",
+        "spVerifyPasswordNext": "Nieuw account? Via de link kies je je wachtwoord.",
+        "spNoPasswordYet": "Account aangemaakt maar nog geen wachtwoord?",
+        "spGetNewLink": "Vraag een nieuwe link aan",
+        "emailExistsMessage": "Er is al een account met dit e-mailadres.",
+    },
+    "cs": {
+        "spRegisterPasswordLater": "Pošleme ti e-mailem odkaz. Tam si zvolíš heslo.",
+        "spVerifyPasswordNext": "Nový účet? Přes odkaz si zvolíš heslo.",
+        "spNoPasswordYet": "Účet je vytvořený, ale heslo ještě nemáš?",
+        "spGetNewLink": "Pošli mi nový odkaz",
+        "emailExistsMessage": "S touto e-mailovou adresou už účet existuje.",
+    },
+}
+
 # The partial sets, in the order they are written to each file:
 # (name, per-locale dict, the comment above the block).
 PARTIAL = [
@@ -453,6 +492,7 @@ PARTIAL = [
     ("VERIFY_WAY_OUT", VERIFY_WAY_OUT, "Verify-email page: wrong address, start again (see VERIFY_WAY_OUT)."),
     ("VERIFY_DEAD_END", VERIFY_DEAD_END, "Verify link in a second browser: one button into the app (see VERIFY_DEAD_END)."),
     ("SET_PASSWORD", SET_PASSWORD, "The first password is chosen, not changed (see SET_PASSWORD)."),
+    ("NO_PASSWORD_YET", NO_PASSWORD_YET, "The account that never chose a password (see NO_PASSWORD_YET)."),
     ("PASSWORD_RULES", PASSWORD_RULES, "Password rules, all shown up front, singular and plural (see PASSWORD_RULES)."),
     ("NL_JE", NL_JE, "Keycloak keys re-worded from “u” to “je”, Dutch only (see NL_JE)."),
 ]

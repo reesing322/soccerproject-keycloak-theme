@@ -94,6 +94,16 @@ The verify-email page keeps its resend link disabled while Keycloak's resend
 cooldown runs (theme#43). `spVerifyResendCooldown` in `login/theme.properties`
 has to match the realm's VERIFY_EMAIL "Cooldown Between Email Resend".
 
+With "Verify email" on, Keycloak leaves the password off the register form and
+asks for it after the mail link, so until that click the account exists
+without one (theme#38, #39). The register form says so above its button when
+it has no password field, as do the verify-email page and the mail. Signing up
+again then fails as "taken" and logging in as "invalid"; under exactly those
+errors (matched on the formatted `invalidUserMessage`, `emailExistsMessage`,
+`usernameExistsMessage`) both pages link to Keycloak's reset-credentials flow,
+which mails a link to an account with no password too and marks the address
+verified when it is followed. It needs `resetPasswordAllowed` on the realm.
+
 Every control is at least 44px on a phone (theme#43). Inline links grow
 their hit area with padding and give the space back with a negative margin,
 so text does not move. Check a new control at 375px wide.

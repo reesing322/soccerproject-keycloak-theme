@@ -35,6 +35,11 @@
 <#assign spFirstRender = !(messagesPerField.exists('global')
     || messagesPerField.existsError('username','email','password','password-confirm','termsAccepted')
     || (message?? && message?has_content))>
+<#-- The manager name or the address is already taken (theme#39). Matched on
+     the formatted text, as messagesPerField carries no key. -->
+<#assign spTaken = realm.resetPasswordAllowed
+    && ((messagesPerField.existsError('email') && messagesPerField.get('email') == msg("emailExistsMessage"))
+     || (messagesPerField.existsError('username') && messagesPerField.get('username') == msg("usernameExistsMessage")))>
 <#-- displayInfo=true: the "back to sign in" link lives in the card footer
      here, not inside the form's options row as on the base page. -->
 <#-- displayRequiredFields=false: the hint is rendered by this page, directly
@@ -99,6 +104,14 @@
                         <#assign spPattern = (attribute.validators.pattern.pattern)!"">
                         <p id="sp-username-rule" class="kc-helper-after"><#if spPattern == "^[\\p{L}\\p{N} ]+$">${msg("spManagerNameRule", spLen.min, spLen.max)}<#else>${msg("spManagerNameRuleLength", spLen.min, spLen.max)}</#if></p>
                     </#if>
+                </#if>
+                <#-- theme#39: "taken" is also what an account that never
+                     followed its mail link gets when it signs up again. Under the
+                     email field, the same way out as on the login page. -->
+                <#if callback = "afterField" && attribute.name == "email" && spTaken>
+                    <p id="sp-no-password" class="kc-helper-after">
+                        ${msg("spNoPasswordYet")} <a class="sp-link" href="${url.loginResetCredentialsUrl}">${msg("spGetNewLink")}</a>
+                    </p>
                 </#if>
             </@userProfileCommons.userProfileFormFields>
 
@@ -175,6 +188,13 @@
                 <div class="sp-field">
                     <div class="g-recaptcha" data-size="compact" data-sitekey="${recaptchaSiteKey}" data-action="${recaptchaAction}"></div>
                 </div>
+            </#if>
+
+            <#-- theme#38: with "Verify email" on, Keycloak leaves the password
+                 off this form and asks for it after the mail link. Say so
+                 before the button, not after the surprise. -->
+            <#if !passwordRequired??>
+                <p id="sp-password-later" class="kc-helper-after">${msg("spRegisterPasswordLater")}</p>
             </#if>
 
             <div class="kc-form-buttons">
