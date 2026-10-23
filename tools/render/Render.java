@@ -435,6 +435,16 @@ public class Render {
             Map.of("auth", quietAuth, "message", Map.of("type", "error", "summary", new MessageFormat(
                 messages.getProperty("emailVerifySendCooldown", "{0}"), Locale.ENGLISH).format(new Object[]{6L}))),
             Collections.<String>emptySet()});
+        // As the development deployment renders it (theme#44): the restart URL
+        // relative, the form actions absolute. The legal links must follow the
+        // environment, not fall back to production.
+        Map<String, Object> devUrl = new HashMap<>(url);
+        String devAuth = "https://auth.development.soccerproject.com/realms/soccerproject/login-actions/";
+        devUrl.put("loginRestartFlowUrl", "/realms/soccerproject/login-actions/restart");
+        devUrl.put("loginAction", devAuth + "authenticate");
+        devUrl.put("registrationAction", devAuth + "registration");
+        cases.add(new Object[]{"register.ftl", "register-dev-relative-urls",
+            Map.of("auth", quietAuth, "message", Map.of(), "url", devUrl), Collections.<String>emptySet()});
         // label -> {needle, "1" if the page must contain it, "0" if it must not}
         Map<String, String[]> contains = new HashMap<>();
         contains.put("update-password-sign-up", new String[]{"id=\"logout-sessions\"", "0"});
@@ -442,6 +452,8 @@ public class Render {
         contains.put("verify-email-cooldown", new String[]{"data-wait=\"6\"", "1"});
         contains.put("inherited-login-verify-email", new String[]{"data-wait=\"30\"", "1"});
         // Each rule carries its check and Keycloak's message for it (theme#41).
+        contains.put("register-dev-relative-urls",
+            new String[]{"href=\"https://www.development.soccerproject.com/legal/terms\"", "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 
         new File(outDir).mkdirs();

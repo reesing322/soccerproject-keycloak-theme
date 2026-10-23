@@ -31,12 +31,19 @@
      production legal text. auth.<env>.soccerproject.com -> www.<env>.soccerproject.com,
      read from the host Keycloak put in its own absolute URLs; anything that does
      not look like auth.[<env>.]soccerproject.com (localhost, login.soccerproject.com, any
-     other domain: a spoofed Host must not pick a link target) keeps kcLogoLink. -->
+     other domain: a spoofed Host must not pick a link target) keeps kcLogoLink.
+     Several of Keycloak's URLs are tried, first absolute one wins (theme#44): the
+     development deployment renders loginRestartFlowUrl as a relative path, which
+     left every footer and legal link on production, while its form actions
+     (loginAction, registrationAction) stay absolute. -->
 <#assign spSite = properties.kcLogoLink!'https://www.soccerproject.com'>
-<#assign spAuthHost = (url.loginRestartFlowUrl!'')?matches('^https?://auth\\.((?:[a-z0-9-]+\\.)*soccerproject\\.com)(:[0-9]+)?/.*')>
-<#if spAuthHost>
-  <#assign spSite = 'https://www.' + spAuthHost?groups[1]>
-</#if>
+<#list [url.loginRestartFlowUrl!'', url.loginAction!'', url.registrationAction!'', url.loginUrl!''] as spUrl>
+  <#assign spAuthHost = spUrl?matches('^https?://auth\\.((?:[a-z0-9-]+\\.)*soccerproject\\.com)(:[0-9]+)?/.*')>
+  <#if spAuthHost>
+    <#assign spSite = 'https://www.' + spAuthHost?groups[1]>
+    <#break>
+  </#if>
+</#list>
 <#-- The way into the game from a page that ends a flow (theme#24, theme#40):
      the client's baseUrl when the realm sets one, else this environment's own
      site, whose / sends a signed-in manager on into the app. The realm config
