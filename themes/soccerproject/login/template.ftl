@@ -35,9 +35,13 @@
      Several of Keycloak's URLs are tried, first absolute one wins (theme#44): the
      development deployment renders loginRestartFlowUrl as a relative path, which
      left every footer and legal link on production, while its form actions
-     (loginAction, registrationAction) stay absolute. -->
+     stay absolute. Not url.loginAction: it THROWS ("action URI not set", which
+     `!` does not catch) on every page rendered without an auth session -- the
+     error page for a used or foreign verify link -- and the error page then
+     failed as a bare HTTP 500 (theme#51). url.registrationAction returns the
+     same action URI when there is one and an absolute realm URL when not. -->
 <#assign spSite = properties.kcLogoLink!'https://www.soccerproject.com'>
-<#list [url.loginRestartFlowUrl!'', url.loginAction!'', url.registrationAction!'', url.loginUrl!''] as spUrl>
+<#list [url.loginRestartFlowUrl!'', url.registrationAction!'', url.loginUrl!''] as spUrl>
   <#assign spAuthHost = spUrl?matches('^https?://auth\\.((?:[a-z0-9-]+\\.)*soccerproject\\.com)(:[0-9]+)?/.*')>
   <#if spAuthHost>
     <#assign spSite = 'https://www.' + spAuthHost?groups[1]>
