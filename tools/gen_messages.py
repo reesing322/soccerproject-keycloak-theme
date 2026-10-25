@@ -455,9 +455,12 @@ NL_JE = {
 #   * spVerifyPasswordNext -- the same promise on the verify-email page.
 #   * spNoPasswordYet + spGetNewLink -- under a failed login and under "taken"
 #     on the register form, linking to Keycloak's reset-credentials flow. That
-#     flow mails a link to an account with no password too, and following it
-#     marks the address verified (ResetCredentialEmail.action, KC 26.7.1), so
-#     it is the resend the dead end was missing.
+#     flow mails a link to an account with no password too. Following it does
+#     NOT mark the address verified (theme#52: the action-token branch of
+#     ResetCredentialEmail skips action() in 26.7.1, and 26.8.0 removed the
+#     call on purpose), so VERIFY_EMAIL then sends one more mail.
+#   * spResetNoPasswordYet -- under the reset form's button: says so up front,
+#     with the reset mail's spResetNoPassword (email bundles) saying it again.
 #   * emailExistsMessage -- Keycloak's "Email already exists." in our voice.
 # English, Dutch and Czech, like MANAGER_NAME.
 NO_PASSWORD_YET = {
@@ -466,6 +469,7 @@ NO_PASSWORD_YET = {
         "spVerifyPasswordNext": "New account? The link is where you choose your password.",
         "spNoPasswordYet": "Created an account but no password yet?",
         "spGetNewLink": "Get a new link",
+        "spResetNoPasswordYet": "No password yet? This form works for you too. You get two emails: the first one’s link sends the second, which confirms your address. Then you choose your password.",
         "emailExistsMessage": "There is already an account with this email address.",
     },
     "nl": {
@@ -473,6 +477,7 @@ NO_PASSWORD_YET = {
         "spVerifyPasswordNext": "Nieuw account? Via de link kies je je wachtwoord.",
         "spNoPasswordYet": "Account aangemaakt maar nog geen wachtwoord?",
         "spGetNewLink": "Vraag een nieuwe link aan",
+        "spResetNoPasswordYet": "Nog geen wachtwoord? Ook dan gebruik je dit formulier. Je krijgt twee mails: de link in de eerste stuurt de tweede, die je adres bevestigt. Daarna kies je je wachtwoord.",
         "emailExistsMessage": "Er is al een account met dit e-mailadres.",
     },
     "cs": {
@@ -480,6 +485,7 @@ NO_PASSWORD_YET = {
         "spVerifyPasswordNext": "Nový účet? Přes odkaz si zvolíš heslo.",
         "spNoPasswordYet": "Účet je vytvořený, ale heslo ještě nemáš?",
         "spGetNewLink": "Pošli mi nový odkaz",
+        "spResetNoPasswordYet": "Ještě nemáš heslo? I tak použij tento formulář. Dostaneš dva e-maily: odkaz v prvním pošle druhý, který potvrdí tvou adresu. Pak si zvolíš heslo.",
         "emailExistsMessage": "S touto e-mailovou adresou už účet existuje.",
     },
 }
@@ -508,7 +514,7 @@ ALIASES = {
 M = {}
 
 M["en"] = dict(
-    spSendResetEmail="Send reset email",
+    spSendResetEmail="Send me a link",
     spRememberedPassword="Remembered your password?",
     languages="Language",
     loginAccountTitle="Log in",
@@ -538,7 +544,7 @@ M["en"] = dict(
 )
 
 M["nl"] = dict(
-    spSendResetEmail="Stuur herstelmail",
+    spSendResetEmail="Stuur me een link",
     spRememberedPassword="Weet je je wachtwoord weer?",
     languages="Taal",
     loginAccountTitle="Inloggen",
@@ -778,7 +784,7 @@ M["ro"] = dict(
 )
 
 M["cs"] = dict(
-    spSendResetEmail="Odeslat e-mail pro obnovení",
+    spSendResetEmail="Pošli mi odkaz",
     spRememberedPassword="Vzpomněl sis na heslo?",
     languages="Jazyk",
     loginAccountTitle="Přihlásit se",

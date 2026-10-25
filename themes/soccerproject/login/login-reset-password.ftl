@@ -57,11 +57,17 @@
                 </#if>
             </div>
 
-            <#-- "Send reset email", not Keycloak's "Submit": the button should
+            <#-- "Send me a link", not Keycloak's "Submit": the button should
                  say what happens next, and the next thing is an email arriving.
+                 Not "reset" (theme#52): an account with no password lands here too.
                  Its own key rather than an override of `doSubmit`, which eight
                  other base pages share. -->
             <button class="sp-btn sp-btn--primary sp-btn--block" type="submit">${msg("spSendResetEmail")}</button>
+
+            <#-- theme#52: "Get a new link" lands here too, for an account that
+                 never chose a password. Keycloak then sends two mails (the reset
+                 link does not confirm the address), so say so before they arrive. -->
+            <p id="sp-reset-no-password" class="kc-helper-after">${msg("spResetNoPasswordYet")}</p>
         </form>
 
     <#elseif section = "info">

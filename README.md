@@ -110,8 +110,16 @@ it has no password field, as do the verify-email page and the mail. Signing up
 again then fails as "taken" and logging in as "invalid"; under exactly those
 errors (matched on the formatted `invalidUserMessage`, `emailExistsMessage`,
 `usernameExistsMessage`) both pages link to Keycloak's reset-credentials flow,
-which mails a link to an account with no password too and marks the address
-verified when it is followed. It needs `resetPasswordAllowed` on the realm.
+which mails a link to an account with no password too. It needs
+`resetPasswordAllowed` on the realm.
+
+That link does **not** mark the address verified (theme#52). In 26.7.1 the
+call sits in `ResetCredentialEmail.action()`, which a mail link never reaches,
+and 26.8.0 removed it on purpose: only an explicit email verification marks an
+address verified. So after the reset link `VERIFY_EMAIL` sends one more mail,
+and only its link leads to "Choose a password". The reset page (under its
+button) and the reset mail say so, in words that fit both a forgotten password
+and none at all.
 
 Every control is at least 44px on a phone (theme#43). Inline links grow
 their hit area with padding and give the space back with a negative margin,
