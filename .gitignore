@@ -2,3 +2,6 @@
 # the command in tools/render/README.md rather than reading a committed copy,
 # which would otherwise churn 70-odd HTML files on every CSS or copy change.
 /preview/
+
+# The code-graph tool's local cache — regenerable, never committed (same rule as backend and frontend).
+/graft/
