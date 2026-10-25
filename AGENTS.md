@@ -35,5 +35,3 @@ There is no running Keycloak and no test suite. Render every page offline with `
 
 `fix(login): theme#N — <what the user sees>` (scope `login`, `email` or `account`). Issues live in
 this repo and are written `theme#N`; frontend issues as `frontend#N`.
-
-Only report to me in ASD-STE100 Simplified Technical English.
