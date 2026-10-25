@@ -469,6 +469,9 @@ public class Render {
         // Each rule carries its check and Keycloak's message for it (theme#41).
         contains.put("register-dev-relative-urls",
             new String[]{"href=\"https://www.development.soccerproject.com/legal/terms\"", "1"});
+        // No absolute URL on a page without an auth session (theme#51): the site
+        // links are corrected from the browser's host.
+        contains.put("error-no-auth-session", new String[]{"window.location.hostname", "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 
         new File(outDir).mkdirs();
