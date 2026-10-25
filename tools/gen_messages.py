@@ -533,7 +533,7 @@ M["en"] = dict(
     spRegisterFoot="Free to play. Nothing to download and nothing to pay.",
     spFootLead="Since 2004, your favourite football manager.",
     spFaq="FAQ",
-    spTerms="Terms of service",
+    spTerms="Terms of use",
     spPrivacy="Privacy notice",
 )
 
@@ -806,7 +806,7 @@ M["cs"] = dict(
     spRegisterFoot="Zdarma. Nic ke stažení a nic k placení.",
     spFootLead="Od roku 2004 tvůj oblíbený fotbalový manažer.",
     spFaq="Časté dotazy",
-    spTerms="Podmínky služby",
+    spTerms="Podmínky používání",
     spPrivacy="Zásady ochrany osobních údajů",
 )
 

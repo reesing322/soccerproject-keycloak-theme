@@ -411,6 +411,20 @@ public class Render {
         cases.add(new Object[]{"error.ftl", "error-skip-link",
             Map.of("auth", quietAuth, "message", expired, "client", appClient, "skipLink", true),
             Collections.<String>emptySet()});
+        // The error page Keycloak renders with no auth session: a used verify link,
+        // or a fresh one opened in another browser (theme#51). There UrlBean's
+        // loginAction THROWS "action URI not set" (`!` does not catch it) and the
+        // page died as a bare HTTP 500.
+        TemplateHashModel noActionUrl = new TemplateHashModel() {
+            public TemplateModel get(String k) throws TemplateModelException {
+                if ("loginAction".equals(k)) throw new TemplateModelException("action URI not set");
+                return cfg.getObjectWrapper().wrap(url.get(k));
+            }
+            public boolean isEmpty() { return false; }
+        };
+        cases.add(new Object[]{"error.ftl", "error-no-auth-session",
+            Map.of("auth", quietAuth, "message", expired, "client", appClient, "url", noActionUrl),
+            Collections.<String>emptySet()});
         // The way into the app on the other flow-ending pages: {element id, href}; "" = none.
         Map<String, String[]> appButton = new HashMap<>();
         appButton.put("page-expired", new String[]{"sp-go-to-app", appUrl});
@@ -418,6 +432,7 @@ public class Render {
         appButton.put("error-expired-action", new String[]{"backToApplication", appUrl});
         appButton.put("error-expired-action-no-baseurl", new String[]{"backToApplication", siteUrl});
         appButton.put("error-skip-link", new String[]{"backToApplication", ""});
+        appButton.put("error-no-auth-session", new String[]{"backToApplication", appUrl});
 
         // Choose-password page (theme#43): "sign out other devices" only where
         // there can be other devices. Keycloak's warning tells the two apart.
@@ -454,6 +469,9 @@ public class Render {
         // Each rule carries its check and Keycloak's message for it (theme#41).
         contains.put("register-dev-relative-urls",
             new String[]{"href=\"https://www.development.soccerproject.com/legal/terms\"", "1"});
+        // No absolute URL on a page without an auth session (theme#51): the site
+        // links are corrected from the browser's host.
+        contains.put("error-no-auth-session", new String[]{"window.location.hostname", "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 
         new File(outDir).mkdirs();

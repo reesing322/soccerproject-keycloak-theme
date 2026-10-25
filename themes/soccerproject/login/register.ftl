@@ -94,7 +94,9 @@
                  length validators otherwise only ever answer "Invalid value."
                  after a submit. Read from the realm's own validators, so the
                  hint follows the realm; the character half is printed only for
-                 the pattern it describes, and no length validator means no
+                 the patterns it describes (the second is the one before
+                 theme#54, which also let a space lead, trail or double up),
+                 and no length validator means no
                  hint. The script at the bottom moves it into the field and
                  points aria-describedby at it. -->
             <@userProfileCommons.userProfileFormFields; callback, attribute>
@@ -102,7 +104,7 @@
                     <#assign spLen = (attribute.validators.length)!{}>
                     <#if spLen.min?? && spLen.max??>
                         <#assign spPattern = (attribute.validators.pattern.pattern)!"">
-                        <p id="sp-username-rule" class="kc-helper-after"><#if spPattern == "^[\\p{L}\\p{N} ]+$">${msg("spManagerNameRule", spLen.min, spLen.max)}<#else>${msg("spManagerNameRuleLength", spLen.min, spLen.max)}</#if></p>
+                        <p id="sp-username-rule" class="kc-helper-after"><#if spPattern == "^[\\p{L}\\p{N}]+(?: [\\p{L}\\p{N}]+)*$" || spPattern == "^[\\p{L}\\p{N} ]+$">${msg("spManagerNameRule", spLen.min, spLen.max)}<#else>${msg("spManagerNameRuleLength", spLen.min, spLen.max)}</#if></p>
                     </#if>
                 </#if>
                 <#-- theme#39: "taken" is also what an account that never

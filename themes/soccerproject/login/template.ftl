@@ -35,12 +35,21 @@
      Several of Keycloak's URLs are tried, first absolute one wins (theme#44): the
      development deployment renders loginRestartFlowUrl as a relative path, which
      left every footer and legal link on production, while its form actions
-     (loginAction, registrationAction) stay absolute. -->
+     stay absolute. Not url.loginAction: it THROWS ("action URI not set", which
+     `!` does not catch) on every page rendered without an auth session -- the
+     error page for a used or foreign verify link -- and the error page then
+     failed as a bare HTTP 500 (theme#51). url.registrationAction returns the
+     same action URI when there is one, and a relative path when not.
+     So a page without an auth session (the used or foreign verify link, its
+     error page) has no absolute URL at all and keeps kcLogoLink here; the
+     script at the end of the page corrects it from the browser's own host. -->
 <#assign spSite = properties.kcLogoLink!'https://www.soccerproject.com'>
-<#list [url.loginRestartFlowUrl!'', url.loginAction!'', url.registrationAction!'', url.loginUrl!''] as spUrl>
+<#assign spSiteFromHost = false>
+<#list [url.loginRestartFlowUrl!'', url.registrationAction!'', url.loginUrl!''] as spUrl>
   <#assign spAuthHost = spUrl?matches('^https?://auth\\.((?:[a-z0-9-]+\\.)*soccerproject\\.com)(:[0-9]+)?/.*')>
   <#if spAuthHost>
     <#assign spSite = 'https://www.' + spAuthHost?groups[1]>
+    <#assign spSiteFromHost = true>
     <#break>
   </#if>
 </#list>
@@ -502,6 +511,26 @@
     });
   })();
 </script>
+<#if !spSiteFromHost>
+<#-- No absolute URL on this page (see spSite at the top): take the environment
+     from the host the browser is on, by the same rule. location.hostname is
+     the real one, so a spoofed Host header cannot pick the target. Only links
+     that start with the fallback site change; client.baseUrl links do not. -->
+<script>
+  (function () {
+    var m = /^auth\.((?:[a-z0-9-]+\.)*soccerproject\.com)$/.exec(window.location.hostname);
+    if (!m) return;
+    var from = '${spSite?js_string?no_esc}', to = 'https://www.' + m[1];
+    if (from === to) return;
+    Array.prototype.forEach.call(document.querySelectorAll('a[href]'), function (a) {
+      var h = a.getAttribute('href');
+      if (h.indexOf(from) === 0 && /^($|[\/?#])/.test(h.slice(from.length))) {
+        a.setAttribute('href', to + h.slice(from.length));
+      }
+    });
+  })();
+</script>
+</#if>
 </body>
 </html>
 </#macro>
