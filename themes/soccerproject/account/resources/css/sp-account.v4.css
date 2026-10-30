@@ -10,10 +10,14 @@
    at the bottom; the prefers-color-scheme block covers PF4.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Barlow+Semi+Condensed:wght@400;500;600;700&display=swap');
-
 /* ---------- Brand palette (Heritage) ---------- */
 :root {
+  /* The login theme's `--sp-font`: no webfont. A Google Fonts import here sent
+     every visitor's IP address to Google (theme#64). */
+  --sp-font:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+
   --sp-primary:        #2e7fd6;
   --sp-primary-dark:   #2670c2;
   --sp-primary-darker: #1f5ba3;
@@ -28,9 +32,9 @@
   --pf-global--link--Color:        var(--sp-link);
   --pf-global--link--Color--hover: var(--sp-primary-darker);
   --pf-global--BorderRadius--sm:   8px;
-  --pf-global--FontFamily--text:    'Barlow Semi Condensed', system-ui, sans-serif;
-  --pf-global--FontFamily--sans-serif: 'Barlow Semi Condensed', system-ui, sans-serif;
-  --pf-global--FontFamily--heading--sans-serif: 'Oswald', 'Arial Narrow', sans-serif;
+  --pf-global--FontFamily--text:    var(--sp-font);
+  --pf-global--FontFamily--sans-serif: var(--sp-font);
+  --pf-global--FontFamily--heading--sans-serif: var(--sp-font);
 
   /* ---- PatternFly 5 (KC 24/25/26 — primary) ---- */
   --pf-v5-global--primary-color--100: var(--sp-primary);
@@ -41,9 +45,9 @@
   --pf-v5-global--link--Color--hover: var(--sp-primary-darker);
   --pf-v5-global--BorderRadius--sm:   8px;
   --pf-v5-global--focus-color--100:   var(--sp-primary);
-  --pf-v5-global--FontFamily--text:    'Barlow Semi Condensed', system-ui, sans-serif;
-  --pf-v5-global--FontFamily--sans-serif: 'Barlow Semi Condensed', system-ui, sans-serif;
-  --pf-v5-global--FontFamily--heading--sans-serif: 'Oswald', 'Arial Narrow', sans-serif;
+  --pf-v5-global--FontFamily--text:    var(--sp-font);
+  --pf-v5-global--FontFamily--sans-serif: var(--sp-font);
+  --pf-v5-global--FontFamily--heading--sans-serif: var(--sp-font);
 }
 
 /* ============================================================
@@ -83,7 +87,7 @@ html.pf-v5-theme-dark .pf-v5-c-button.pf-m-primary {
   --pf-c-button--m-primary--hover--BackgroundColor: var(--sp-primary-dark);
   --pf-c-button--m-primary--active--BackgroundColor: var(--sp-primary-darker);
   --pf-c-button--m-primary--focus--BackgroundColor: var(--sp-primary-dark);
-  font-family: 'Oswald', 'Arial Narrow', sans-serif;
+  font-family: var(--sp-font);
   letter-spacing: .03em;
 }
 
@@ -95,7 +99,7 @@ html.pf-v5-theme-dark .pf-v5-c-button.pf-m-primary {
 }
 
 /* ---------- Headings + focus tint ---------- */
-.pf-c-title { font-family: 'Oswald', 'Arial Narrow', sans-serif; letter-spacing: .01em; }
+.pf-c-title { font-family: var(--sp-font); letter-spacing: .01em; }
 :root { --pf-global--focus-color--100: var(--sp-primary); }
 
 /* ============================================================
