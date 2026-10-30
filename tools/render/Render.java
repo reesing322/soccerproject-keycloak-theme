@@ -402,6 +402,11 @@ public class Render {
                                     "clientId", "account-console", "attributes", Map.of()),
                    "skipLink", true),
             Collections.<String>emptySet()});
+        // Any other info page with a pageRedirectUri: stock order, that URI first.
+        cases.add(new Object[]{"info.ftl", "info-page-redirect-other",
+            Map.of("auth", quietAuth, "message", Map.of("type", "info", "summary", "x"),
+                   "pageRedirectUri", appUrl + "after", "actionUri", "", "client", appClient),
+            Collections.<String>emptySet()});
         // On any other info page, skipLink still hides the button.
         cases.add(new Object[]{"info.ftl", "info-skip-link-other",
             Map.of("auth", quietAuth, "message", Map.of("type", "info", "summary", "x"),
@@ -500,6 +505,7 @@ public class Render {
         appButton.put("error-expired-action-account-console", new String[]{"backToApplication", siteUrl});
         appButton.put("info-page-redirect", new String[]{"sp-info-login", appUrl + "?verified=1"});
         appButton.put("info-account-ready-account-console", new String[]{"sp-info-login", siteUrl + "?verified=1"});
+        appButton.put("info-page-redirect-other", new String[]{"sp-info-continue", appUrl + "after"});
         appButton.put("info-skip-link-other", new String[]{"sp-info-continue", ""});
         appButton.put("info-skip-link", new String[]{"sp-info-login", appUrl + "?verified=1"});
 
