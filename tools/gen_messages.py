@@ -207,7 +207,8 @@ VERIFY_WAY_OUT = {
 # resume the sign-up there, so info.ftl and login-page-expired.ftl end on one
 # button into the app instead of its stock "Back to Application" / "Click here".
 # spAccountReady* (theme#62): the "Account updated" end of a sign-up finished
-# in another browser, which leaves the user logged out. spExpiredLinkHint
+# in another browser, which leaves the user logged out. Keycloak ends an admin
+# "execute actions" mail on the same page, so the text names no password. spExpiredLinkHint
 # (theme#63): under "Action expired", before spGetNewLink.
 # English, Dutch and Czech, like VERIFY_OTHER_TAB.
 VERIFY_DEAD_END = {
@@ -219,7 +220,7 @@ VERIFY_DEAD_END = {
         "spLoginRestart": "Log in again",
         "spLoginContinue": "Continue logging in",
         "spAccountReadyTitle": "Your account is ready",
-        "spAccountReadyText": "One last step: log in with your new password.",
+        "spAccountReadyText": "One last step: log in to continue.",
         "spExpiredLinkHint": "Link no longer valid?",
     },
     "nl": {
@@ -230,7 +231,7 @@ VERIFY_DEAD_END = {
         "spLoginRestart": "Opnieuw inloggen",
         "spLoginContinue": "Verder met inloggen",
         "spAccountReadyTitle": "Je account is klaar",
-        "spAccountReadyText": "Nog één stap: log in met je nieuwe wachtwoord.",
+        "spAccountReadyText": "Nog één stap: log in om verder te gaan.",
         "spExpiredLinkHint": "Werkt de link niet meer?",
     },
     "cs": {
@@ -241,7 +242,7 @@ VERIFY_DEAD_END = {
         "spLoginRestart": "Přihlásit se znovu",
         "spLoginContinue": "Pokračovat v přihlašování",
         "spAccountReadyTitle": "Tvůj účet je připravený",
-        "spAccountReadyText": "Zbývá poslední krok: přihlas se novým heslem.",
+        "spAccountReadyText": "Zbývá poslední krok: přihlas se a pokračuj.",
         "spExpiredLinkHint": "Odkaz už nefunguje?",
     },
 }

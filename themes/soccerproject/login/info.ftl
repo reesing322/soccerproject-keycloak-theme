@@ -18,9 +18,16 @@
       config cannot remove (it stops mail link scanners from spending the
       token), so it gets a button that says what it does.
 
+    * "Account updated" with no actionUri (theme#62): the end of a sign-up
+      finished in another browser, where Keycloak leaves the user logged out.
+      Our own title, "log in to continue" and ONE Log in button into the app
+      with verified=1. This branch ignores pageRedirectUri and skipLink: the
+      redirect is the app logged out with no hint, and the page must not end
+      with nothing to click.
+
   "The app" is client.baseUrl, or this environment's site when the client has
-  none (theme#40, layout.spAppUrl): reopening a used link must not end on a
-  title with nothing to click.
+  none or is one of Keycloak's own (theme#40, #62, layout.spAppUrl):
+  reopening a used link must not end on a title with nothing to click.
 
   The message bean carries only the formatted text, not its key, so the
   verified case is recognised by comparing against the same keys formatted in

@@ -398,7 +398,8 @@ public class Render {
             Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary",
                        messages.getProperty("accountUpdatedMessage", "accountUpdatedMessage")),
                    "messageHeader", "accountUpdatedTitle", "pageRedirectUri", "", "actionUri", "",
-                   "client", Map.of("baseUrl", "https://auth.example.com/realms/soccerproject/account/", "attributes", Map.of()),
+                   "client", Map.of("baseUrl", "https://auth.example.com/realms/soccerproject/account/",
+                                    "clientId", "account-console", "attributes", Map.of()),
                    "skipLink", true),
             Collections.<String>emptySet()});
         cases.add(new Object[]{"info.ftl", "info-skip-link",
@@ -421,6 +422,12 @@ public class Render {
         cases.add(new Object[]{"error.ftl", "error-expired-action-client-id",
             Map.of("auth", quietAuth, "message", expired, "client",
                    Map.of("baseUrl", appUrl, "clientId", "soccerproject-frontend", "attributes", Map.of())),
+            Collections.<String>emptySet()});
+        // Keycloak's own client: no client_id on the link, the site as the way in.
+        cases.add(new Object[]{"error.ftl", "error-expired-action-account-console",
+            Map.of("auth", quietAuth, "message", expired, "client",
+                   Map.of("baseUrl", "https://auth.example.com/realms/soccerproject/account/",
+                          "clientId", "account-console", "attributes", Map.of())),
             Collections.<String>emptySet()});
         cases.add(new Object[]{"error.ftl", "error-skip-link",
             Map.of("auth", quietAuth, "message", expired, "client", appClient, "skipLink", true),
@@ -455,6 +462,7 @@ public class Render {
         appButton.put("error-skip-link", new String[]{"backToApplication", ""});
         appButton.put("error-no-auth-session", new String[]{"backToApplication", appUrl});
         appButton.put("error-stale-tab", new String[]{"backToApplication", appUrl});
+        appButton.put("error-expired-action-account-console", new String[]{"backToApplication", siteUrl});
         appButton.put("info-page-redirect", new String[]{"sp-info-login", appUrl + "?verified=1"});
         appButton.put("info-account-ready-account-console", new String[]{"sp-info-login", siteUrl + "?verified=1"});
         appButton.put("info-skip-link", new String[]{"sp-info-login", appUrl + "?verified=1"});
@@ -509,6 +517,7 @@ public class Render {
             ">" + messages.getProperty("spGoToApp", "spGoToApp") + "<", "1", "id=\"sp-expired-new-link\"", "0"});
         contains.put("error-expired-action", new String[]{"id=\"sp-expired-new-link\"", "1"});
         contains.put("error-expired-action-client-id", new String[]{"loginResetCredentialsUrl?client_id=soccerproject-frontend", "1"});
+        contains.put("error-expired-action-account-console", new String[]{"client_id=", "0", "id=\"sp-expired-new-link\"", "1"});
         contains.put("info-page-redirect", new String[]{messages.getProperty("spAccountReadyTitle", "spAccountReadyTitle"), "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 

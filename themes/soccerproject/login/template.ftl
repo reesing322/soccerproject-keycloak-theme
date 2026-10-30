@@ -58,12 +58,16 @@
      site, whose / sends a signed-in manager on into the app. The realm config
      sets no baseUrl on soccerproject-frontend, so without the fallback the
      error, email-verified and page-expired pages had nothing to click.
-     Not a baseUrl under /realms/ (theme#62): that is Keycloak's own account
-     console, the client of a flow that came in without a client_id, such as
-     the verify or reset link opened in another browser. -->
+     Not the baseUrl of Keycloak's own clients (theme#62): the account console
+     is the client of a flow that came in without a client_id, such as the
+     verify or reset link opened in another browser, and its baseUrl is the
+     Keycloak account page. -->
+<#function spSystemClient>
+  <#return ["account", "account-console", "security-admin-console", "admin-cli"]?seq_contains((client.clientId)!"")>
+</#function>
 <#function spAppUrl>
   <#local spBase = (client.baseUrl)!"">
-  <#return (spBase?has_content && !spBase?contains("/realms/"))?then(spBase, spSite)>
+  <#return (spBase?has_content && !spSystemClient())?then(spBase, spSite)>
 </#function>
 <#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false showAnotherWayIfPresent=true spTitle="">
 <!DOCTYPE html>
@@ -327,7 +331,7 @@
         if (/test|qa|acc/.test(o)) return kind('test');
         if (/dev/.test(o)) return kind('dev');
         if (/local/.test(o)) return kind('local');
-        return { kind: 'nonprod', label: '${msg("spEnvNamed", "§")?js_string?no_esc}'.replace('§', o) };
+        return { kind: 'nonprod', label: '${msg("spEnvNamed", "§")?js_string?no_esc}'.replace('§', function () { return o; }) };
       }
       if (prodHosts.indexOf(h) !== -1) return null;
       if (h === 'localhost' || h === '127.0.0.1' || h === '::1' || /\.local$/.test(h)) return kind('local');

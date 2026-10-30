@@ -15,18 +15,23 @@
   its own title, a text that names the likely cause and says to log in
   (STALE_TAB in tools/gen_messages.py), and "Go to SoccerProject", the words
   the text uses. Matched on the formatted text, as info.ftl does.
+
+  theme#63: under the three "Action expired" errors, "Link no longer valid?
+  Get a new link" to Keycloak's reset-credentials URL, with client_id when the
+  client is not one of Keycloak's own (layout.spSystemClient).
 -->
 <#import "template.ftl" as layout>
 <#assign spStaleTab = ((message.summary)!"") == msg("cookieNotFoundMessage")>
 <#-- theme#63: an expired link (reset or verify) left no way to a new one. The
      reset-credentials URL works without a session ("applications may link to
-     reset credentials"); the client goes along when Keycloak knows it, else
-     Keycloak uses its account client and info.ftl ends it (theme#62). -->
+     reset credentials"); the app's client goes along when Keycloak knows it.
+     Keycloak's own clients do not: without client_id Keycloak uses its account
+     client, and info.ftl ends that flow with a way into the app (theme#62). -->
 <#assign spSummaryText = (message.summary)!"">
 <#assign spExpiredLink = spSummaryText == msg("expiredActionMessage") || spSummaryText == msg("expiredActionTokenNoSessionMessage")
   || spSummaryText == msg("expiredActionTokenSessionExistsMessage")>
 <#assign spResetUrl = url.loginResetCredentialsUrl>
-<#if (client.clientId)?has_content && !spResetUrl?contains("client_id=")>
+<#if (client.clientId)?has_content && !layout.spSystemClient() && !spResetUrl?contains("client_id=")>
   <#assign spResetUrl = spResetUrl + spResetUrl?contains("?")?then("&", "?") + "client_id=" + client.clientId?url("UTF-8")>
 </#if>
 <@layout.registrationLayout displayMessage=false spTitle=spStaleTab?then(msg("spStaleTabTitle"), ""); section>
