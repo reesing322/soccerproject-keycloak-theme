@@ -418,14 +418,24 @@ public class Render {
             Map.of("auth", quietAuth, "message", expired, "client", appClient), Collections.<String>emptySet()});
         cases.add(new Object[]{"error.ftl", "error-expired-action-no-baseurl",
             Map.of("auth", quietAuth, "message", expired, "client", bareClient), Collections.<String>emptySet()});
-        // An expired link gets a way to a new one, with the client (theme#63).
+        // An expired link gets a way to a new one; the app's own client and tab
+        // stay as Keycloak put them on the URL (theme#63).
+        Map<String, Object> appClientUrl = new HashMap<>(url);
+        appClientUrl.put("loginResetCredentialsUrl", url.get("loginResetCredentialsUrl") + "?client_id=soccerproject-frontend&tab_id=t2");
         cases.add(new Object[]{"error.ftl", "error-expired-action-client-id",
-            Map.of("auth", quietAuth, "message", expired, "client",
+            Map.of("auth", quietAuth, "message", expired, "url", appClientUrl, "client",
                    Map.of("baseUrl", appUrl, "clientId", "soccerproject-frontend", "attributes", Map.of())),
             Collections.<String>emptySet()});
         // Keycloak's own client: no client_id on the link, the site as the way in.
         cases.add(new Object[]{"error.ftl", "error-expired-action-account-console",
             Map.of("auth", quietAuth, "message", expired, "client",
+                   Map.of("baseUrl", "https://auth.example.com/realms/soccerproject/account/",
+                          "clientId", "account-console", "attributes", Map.of())),
+            Collections.<String>emptySet()});
+        Map<String, Object> systemUrl = new HashMap<>(url);
+        systemUrl.put("loginResetCredentialsUrl", url.get("loginResetCredentialsUrl") + "?client_id=account-console&tab_id=t1");
+        cases.add(new Object[]{"error.ftl", "error-expired-action-system-url",
+            Map.of("auth", quietAuth, "message", expired, "url", systemUrl, "client",
                    Map.of("baseUrl", "https://auth.example.com/realms/soccerproject/account/",
                           "clientId", "account-console", "attributes", Map.of())),
             Collections.<String>emptySet()});
@@ -516,8 +526,12 @@ public class Render {
         contains.put("error-stale-tab", new String[]{messages.getProperty("spStaleTabTitle", "spStaleTabTitle"), "1",
             ">" + messages.getProperty("spGoToApp", "spGoToApp") + "<", "1", "id=\"sp-expired-new-link\"", "0"});
         contains.put("error-expired-action", new String[]{"id=\"sp-expired-new-link\"", "1"});
-        contains.put("error-expired-action-client-id", new String[]{"loginResetCredentialsUrl?client_id=soccerproject-frontend", "1"});
-        contains.put("error-expired-action-account-console", new String[]{"client_id=", "0", "id=\"sp-expired-new-link\"", "1"});
+        contains.put("error-expired-action-client-id", new String[]{"loginResetCredentialsUrl?client_id=soccerproject-frontend&amp;tab_id=t2\"", "1"});
+        contains.put("error-expired-action-account-console", new String[]{
+            "loginResetCredentialsUrl?client_id=soccerproject-frontend\"", "1", "client_id=account-console", "0"});
+        // Keycloak's URL already carrying the page's own client and tab (theme#63).
+        contains.put("error-expired-action-system-url", new String[]{
+            "loginResetCredentialsUrl?client_id=soccerproject-frontend\"", "1", "tab_id=", "0"});
         contains.put("info-page-redirect", new String[]{messages.getProperty("spAccountReadyTitle", "spAccountReadyTitle"), "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 

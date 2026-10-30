@@ -63,7 +63,7 @@
      verify or reset link opened in another browser, and its baseUrl is the
      Keycloak account page. -->
 <#function spSystemClient>
-  <#return ["account", "account-console", "security-admin-console", "admin-cli"]?seq_contains((client.clientId)!"")>
+  <#return ["account", "account-console", "security-admin-console", "admin-cli", "broker", "realm-management"]?seq_contains((client.clientId)!"")>
 </#function>
 <#function spAppUrl>
   <#local spBase = (client.baseUrl)!"">
@@ -311,7 +311,8 @@
     // When blank, fall back to hostname detection. Set environment=production
     // (or serve from a known prod host) to hide it.
     function detectEnv() {
-      var o = (root.getAttribute('data-env') || '').trim().toLowerCase();
+      var raw = (root.getAttribute('data-env') || '').trim();
+      var o = raw.toLowerCase();
       var h = location.hostname.toLowerCase();
       var prodHosts = ['soccerproject.com', 'www.soccerproject.com', 'auth.soccerproject.com', 'login.soccerproject.com'];
       if (o === 'production' || o === 'prod') return null;
@@ -331,7 +332,7 @@
         if (/test|qa|acc/.test(o)) return kind('test');
         if (/dev/.test(o)) return kind('dev');
         if (/local/.test(o)) return kind('local');
-        return { kind: 'nonprod', label: '${msg("spEnvNamed", "§")?js_string?no_esc}'.replace('§', function () { return o; }) };
+        return { kind: 'nonprod', label: '${msg("spEnvNamed", "§")?js_string?no_esc}'.replace('§', function () { return raw; }) };
       }
       if (prodHosts.indexOf(h) !== -1) return null;
       if (h === 'localhost' || h === '127.0.0.1' || h === '::1' || /\.local$/.test(h)) return kind('local');

@@ -1645,6 +1645,15 @@ input.kc-btn {
   cursor: pointer;
 }
 
+/* A link inside helper text ("Get a new link", theme#39, #63) is 13px text,
+   about 19px high. The padding makes the tap target 44px high on a phone
+   without moving the text; the negative margin gives the line its height back. */
+.kc-helper-after .sp-link {
+  display: inline-block;
+  padding-block: 12px;
+  margin-block: -12px;
+}
+
 /* The verify-email resend link while Keycloak's cooldown runs (theme#43). */
 a[aria-disabled="true"] {
   color: var(--sp-text-muted);

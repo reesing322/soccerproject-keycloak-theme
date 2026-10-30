@@ -17,22 +17,26 @@
   the text uses. Matched on the formatted text, as info.ftl does.
 
   theme#63: under the three "Action expired" errors, "Link no longer valid?
-  Get a new link" to Keycloak's reset-credentials URL, with client_id when the
-  client is not one of Keycloak's own (layout.spSystemClient).
+  Get a new link" to Keycloak's reset-credentials URL, for the app's client
+  (spAppClientId) when the page's client is one of Keycloak's own
+  (layout.spSystemClient) or missing.
 -->
 <#import "template.ftl" as layout>
-<#assign spStaleTab = ((message.summary)!"") == msg("cookieNotFoundMessage")>
+<#assign spSummaryText = (message.summary)!"">
+<#assign spStaleTab = spSummaryText == msg("cookieNotFoundMessage")>
 <#-- theme#63: an expired link (reset or verify) left no way to a new one. The
      reset-credentials URL works without a session ("applications may link to
-     reset credentials"); the app's client goes along when Keycloak knows it.
-     Keycloak's own clients do not: without client_id Keycloak uses its account
-     client, and info.ftl ends that flow with a way into the app (theme#62). -->
-<#assign spSummaryText = (message.summary)!"">
+     reset credentials"); Keycloak puts the page's client_id and tab_id on it.
+     When that client is one of Keycloak's own, or there is none, the link
+     drops them and names the app's client (spAppClientId in theme.properties)
+     instead: for the account client, Keycloak would end the reset logged in on
+     its account console. For the app's client and no redirect_uri, it ends on
+     info.ftl's "Your account is ready" (theme#62). -->
 <#assign spExpiredLink = spSummaryText == msg("expiredActionMessage") || spSummaryText == msg("expiredActionTokenNoSessionMessage")
   || spSummaryText == msg("expiredActionTokenSessionExistsMessage")>
 <#assign spResetUrl = url.loginResetCredentialsUrl>
-<#if (client.clientId)?has_content && !layout.spSystemClient() && !spResetUrl?contains("client_id=")>
-  <#assign spResetUrl = spResetUrl + spResetUrl?contains("?")?then("&", "?") + "client_id=" + client.clientId?url("UTF-8")>
+<#if !(client.clientId)?has_content || layout.spSystemClient()>
+  <#assign spResetUrl = spResetUrl?keep_before("?") + "?client_id=" + (properties.spAppClientId!"soccerproject-frontend")?url("UTF-8")>
 </#if>
 <@layout.registrationLayout displayMessage=false spTitle=spStaleTab?then(msg("spStaleTabTitle"), ""); section>
     <#if section = "header">
