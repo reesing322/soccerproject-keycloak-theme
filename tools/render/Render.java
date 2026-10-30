@@ -368,7 +368,6 @@ public class Render {
         continueHref.put("info-email-verified-header-key", appUrl + "?verified=1");
         // No baseUrl on the client: the environment's site instead (theme#40).
         continueHref.put("info-email-verified-no-baseurl", siteUrl + "?verified=1");
-        continueHref.put("info-page-redirect", appUrl + "after");
         // A client without baseUrl, as the realm config ships it (theme#40).
         cases.add(new Object[]{"info.ftl", "info-email-verified-no-baseurl",
             Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary", verified),
@@ -382,15 +381,25 @@ public class Render {
                    "messageHeader", messages.getProperty("confirmEmailAddressVerificationHeader", "x"),
                    "pageRedirectUri", "", "actionUri", "/realms/soccerproject/login-actions/action-token?key=x",
                    "client", appClient), Collections.<String>emptySet()});
-        // END_AFTER_REQUIRED_ACTIONS with a redirect: stock order, pageRedirectUri first.
-        // This is where a second-browser sign-up ends when a required action
-        // (UPDATE_PASSWORD) follows the verification. AuthenticationManager puts
+        // END_AFTER_REQUIRED_ACTIONS with a redirect. This is where a second-browser
+        // sign-up ends when a required action (UPDATE_PASSWORD) follows the
+        // verification, logged out: "Your account is ready" and a Log in button
+        // to the app's verified banner, not the pageRedirectUri (theme#62). AuthenticationManager puts
         // the bare KEY in messageHeader here, not formatted text, so the mock does too.
         cases.add(new Object[]{"info.ftl", "info-page-redirect",
             Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary",
                        messages.getProperty("accountUpdatedMessage", "accountUpdatedMessage")),
                    "messageHeader", "accountUpdatedTitle",
                    "pageRedirectUri", appUrl + "after", "actionUri", "", "client", appClient),
+            Collections.<String>emptySet()});
+        // The same end when the flow came in without a client_id: Keycloak's
+        // account console is the client and sets skipLink (theme#62, #63).
+        cases.add(new Object[]{"info.ftl", "info-account-ready-account-console",
+            Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary",
+                       messages.getProperty("accountUpdatedMessage", "accountUpdatedMessage")),
+                   "messageHeader", "accountUpdatedTitle", "pageRedirectUri", "", "actionUri", "",
+                   "client", Map.of("baseUrl", "https://auth.example.com/realms/soccerproject/account/", "attributes", Map.of()),
+                   "skipLink", true),
             Collections.<String>emptySet()});
         cases.add(new Object[]{"info.ftl", "info-skip-link",
             Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary",
@@ -408,6 +417,11 @@ public class Render {
             Map.of("auth", quietAuth, "message", expired, "client", appClient), Collections.<String>emptySet()});
         cases.add(new Object[]{"error.ftl", "error-expired-action-no-baseurl",
             Map.of("auth", quietAuth, "message", expired, "client", bareClient), Collections.<String>emptySet()});
+        // An expired link gets a way to a new one, with the client (theme#63).
+        cases.add(new Object[]{"error.ftl", "error-expired-action-client-id",
+            Map.of("auth", quietAuth, "message", expired, "client",
+                   Map.of("baseUrl", appUrl, "clientId", "soccerproject-frontend", "attributes", Map.of())),
+            Collections.<String>emptySet()});
         cases.add(new Object[]{"error.ftl", "error-skip-link",
             Map.of("auth", quietAuth, "message", expired, "client", appClient, "skipLink", true),
             Collections.<String>emptySet()});
@@ -441,6 +455,9 @@ public class Render {
         appButton.put("error-skip-link", new String[]{"backToApplication", ""});
         appButton.put("error-no-auth-session", new String[]{"backToApplication", appUrl});
         appButton.put("error-stale-tab", new String[]{"backToApplication", appUrl});
+        appButton.put("info-page-redirect", new String[]{"sp-info-login", appUrl + "?verified=1"});
+        appButton.put("info-account-ready-account-console", new String[]{"sp-info-login", siteUrl + "?verified=1"});
+        appButton.put("info-skip-link", new String[]{"sp-info-login", appUrl + "?verified=1"});
 
         // Choose-password page (theme#43): "sign out other devices" only where
         // there can be other devices. Keycloak's warning tells the two apart.
@@ -489,7 +506,10 @@ public class Render {
         // links are corrected from the browser's host.
         contains.put("error-no-auth-session", new String[]{"window.location.hostname", "1"});
         contains.put("error-stale-tab", new String[]{messages.getProperty("spStaleTabTitle", "spStaleTabTitle"), "1",
-            ">" + messages.getProperty("spGoToApp", "spGoToApp") + "<", "1"});
+            ">" + messages.getProperty("spGoToApp", "spGoToApp") + "<", "1", "id=\"sp-expired-new-link\"", "0"});
+        contains.put("error-expired-action", new String[]{"id=\"sp-expired-new-link\"", "1"});
+        contains.put("error-expired-action-client-id", new String[]{"loginResetCredentialsUrl?client_id=soccerproject-frontend", "1"});
+        contains.put("info-page-redirect", new String[]{messages.getProperty("spAccountReadyTitle", "spAccountReadyTitle"), "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 
         new File(outDir).mkdirs();

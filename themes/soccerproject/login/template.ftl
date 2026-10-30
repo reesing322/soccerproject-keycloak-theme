@@ -57,9 +57,13 @@
      the client's baseUrl when the realm sets one, else this environment's own
      site, whose / sends a signed-in manager on into the app. The realm config
      sets no baseUrl on soccerproject-frontend, so without the fallback the
-     error, email-verified and page-expired pages had nothing to click. -->
+     error, email-verified and page-expired pages had nothing to click.
+     Not a baseUrl under /realms/ (theme#62): that is Keycloak's own account
+     console, the client of a flow that came in without a client_id, such as
+     the verify or reset link opened in another browser. -->
 <#function spAppUrl>
-  <#return (client.baseUrl)?has_content?then(client.baseUrl, spSite)>
+  <#local spBase = (client.baseUrl)!"">
+  <#return (spBase?has_content && !spBase?contains("/realms/"))?then(spBase, spSite)>
 </#function>
 <#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false showAnotherWayIfPresent=true spTitle="">
 <!DOCTYPE html>
@@ -307,19 +311,30 @@
       var h = location.hostname.toLowerCase();
       var prodHosts = ['soccerproject.com', 'www.soccerproject.com', 'auth.soccerproject.com', 'login.soccerproject.com'];
       if (o === 'production' || o === 'prod') return null;
+      // The text is the page's language (theme#66): one phrase per kind, from
+      // ENV_BANNER in tools/gen_messages.py. An environment= that is none of
+      // the kinds is shown by its own name.
+      var text = {
+        local: '${msg("spEnvLocal")?js_string?no_esc}',
+        dev: '${msg("spEnvDev")?js_string?no_esc}',
+        test: '${msg("spEnvTest")?js_string?no_esc}',
+        staging: '${msg("spEnvStaging")?js_string?no_esc}',
+        nonprod: '${msg("spEnvNonprod")?js_string?no_esc}'
+      };
+      var kind = function (k) { return { kind: k, label: text[k] }; };
       if (o) {
-        if (/stag|stg/.test(o)) return { kind: 'staging', label: o };
-        if (/test|qa|acc/.test(o)) return { kind: 'test', label: o };
-        if (/dev/.test(o)) return { kind: 'dev', label: o };
-        if (/local/.test(o)) return { kind: 'local', label: o };
-        return { kind: 'nonprod', label: o };
+        if (/stag|stg/.test(o)) return kind('staging');
+        if (/test|qa|acc/.test(o)) return kind('test');
+        if (/dev/.test(o)) return kind('dev');
+        if (/local/.test(o)) return kind('local');
+        return { kind: 'nonprod', label: '${msg("spEnvNamed", "§")?js_string?no_esc}'.replace('§', o) };
       }
       if (prodHosts.indexOf(h) !== -1) return null;
-      if (h === 'localhost' || h === '127.0.0.1' || h === '::1' || /\.local$/.test(h)) return { kind: 'local', label: 'Local' };
-      if (/stag|stg/.test(h)) return { kind: 'staging', label: 'Staging' };
-      if (/test|qa|acc/.test(h)) return { kind: 'test', label: 'Test / QA' };
-      if (/dev/.test(h)) return { kind: 'dev', label: 'Development' };
-      return { kind: 'nonprod', label: 'Non-production' };
+      if (h === 'localhost' || h === '127.0.0.1' || h === '::1' || /\.local$/.test(h)) return kind('local');
+      if (/stag|stg/.test(h)) return kind('staging');
+      if (/test|qa|acc/.test(h)) return kind('test');
+      if (/dev/.test(h)) return kind('dev');
+      return kind('nonprod');
     }
 
     var env = detectEnv();
@@ -329,12 +344,11 @@
       bar.setAttribute('data-kind', env.kind);
       bar.setAttribute('role', 'status');
       bar.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>'
-        + '<span><b></b> <span></span></span>';
+        + '<span><b></b></span>';
       // textContent, not string concatenation into innerHTML: `label` can come
       // from the hostname, which is attacker-influencable on a misconfigured
       // vhost.
       bar.querySelector('b').textContent = env.label;
-      bar.querySelector('span span').textContent = 'environment';
       var stage = document.querySelector('.sp-shell');
       stage.insertBefore(bar, stage.firstChild);
     }
