@@ -46,7 +46,11 @@
 <#-- The client the reset runs for: the page's, unless that is one of
      Keycloak's own or missing; then the app's (spAppClientId). -->
 <#assign spResetClient = (!(client.clientId)?has_content || layout.spSystemClient())?then(properties.spAppClientId!"", client.clientId)>
-<#if spResetClient?has_content && (layout.spSystemClient() || !spResetUrl?contains("client_id="))>
+<#-- The client_id Keycloak put on the URL counts too: it can be one of its own
+     when the page has no client bean. -->
+<#assign spUrlClient = spResetUrl?matches(".*[?&]client_id=([^&#]*).*")>
+<#assign spUrlClient = spUrlClient?then(spUrlClient?groups[1], "")>
+<#if spResetClient?has_content && (layout.spSystemClient() || !spUrlClient?has_content || layout.spSystemClient(spUrlClient))>
   <#assign spResetUrl = spResetUrl?keep_before("?") + "?client_id=" + spResetClient?url("UTF-8")>
 </#if>
 <@layout.registrationLayout displayMessage=false spTitle=spStaleTab?then(msg("spStaleTabTitle"), ""); section>
@@ -65,7 +69,9 @@
                 </div>
             </#if>
             <#if spExpiredLink && realm.resetPasswordAllowed>
-                <p id="sp-expired-new-link" class="kc-helper-after">
+                <#-- 16px, not the helper's 6px: the link's 44px tap area reaches 14px
+                     above its text and covered the button's lower edge. -->
+                <p id="sp-expired-new-link" class="kc-helper-after" style="margin-top: 16px;">
                     ${msg("spExpiredLinkHint")} <a class="sp-link" href="${spResetUrl}" data-sp-reset="new-link" data-sp-reset-from="">${msg("spGetNewLink")}</a>
                 </p>
             </#if>

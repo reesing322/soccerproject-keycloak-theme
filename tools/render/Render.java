@@ -450,6 +450,13 @@ public class Render {
             Map.of("auth", quietAuth, "message", expired, "client",
                    Map.of("baseUrl", appUrl, "clientId", "sp-app-test", "attributes", Map.of())),
             Collections.<String>emptySet()});
+        // No client bean, but Keycloak's URL names its account client (theme#63).
+        Map<String, Object> noBeanUrl = new HashMap<>(url);
+        noBeanUrl.put("loginResetCredentialsUrl", url.get("loginResetCredentialsUrl") + "?client_id=account-console&tab_id=t3");
+        cases.add(new Object[]{"error.ftl", "error-expired-action-url-system-client",
+            Map.of("auth", quietAuth, "message", expired, "url", noBeanUrl,
+                   "client", Map.of("baseUrl", "", "attributes", Map.of())),
+            Collections.<String>emptySet()});
         cases.add(new Object[]{"error.ftl", "error-skip-link",
             Map.of("auth", quietAuth, "message", expired, "client", appClient, "skipLink", true),
             Collections.<String>emptySet()});
@@ -555,6 +562,8 @@ public class Render {
             "loginResetCredentialsUrl?client_id=soccerproject-frontend\"", "1", "tab_id=", "0"});
         contains.put("error-expired-action-app-no-session", new String[]{
             "loginResetCredentialsUrl?client_id=sp-app-test\"", "1"});
+        contains.put("error-expired-action-url-system-client", new String[]{
+            "loginResetCredentialsUrl?client_id=soccerproject-frontend\"", "1", "account-console", "0"});
         contains.put("info-page-redirect", new String[]{messages.getProperty("spAccountReadyTitle", "spAccountReadyTitle"), "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 
