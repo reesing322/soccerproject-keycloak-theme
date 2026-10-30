@@ -18,7 +18,7 @@ Two families of keys are written in every locale:
 
 Further sets go to some locales only, so the files are deliberately not all
 equal: EN_ONLY (en); MANAGER_NAME, VERIFY_OTHER_TAB, VERIFY_WAY_OUT, VERIFY_DEAD_END,
-STALE_TAB, SET_PASSWORD, NO_PASSWORD_YET and PASSWORD_RULES (en, nl, cs); NL_JE (nl). The partial sets are listed in PARTIAL.
+ENV_BANNER, STALE_TAB, SET_PASSWORD, NO_PASSWORD_YET and PASSWORD_RULES (en, nl, cs); NL_JE (nl). The partial sets are listed in PARTIAL.
 
 Dutch addresses the reader as "je", never "u" (theme#20): the game does, and
 the generator refuses a formal "u"/"uw" in any Dutch value.
@@ -206,6 +206,10 @@ VERIFY_WAY_OUT = {
 # Verify-email link opened in a second browser (theme#24): Keycloak cannot
 # resume the sign-up there, so info.ftl and login-page-expired.ftl end on one
 # button into the app instead of its stock "Back to Application" / "Click here".
+# spAccountReady* (theme#62): the "Account updated" end of a sign-up finished
+# in another browser, which leaves the user logged out. Keycloak ends an admin
+# "execute actions" mail on the same page, so the text names no password. spExpiredLinkHint
+# (theme#63): under "Action expired", before spGetNewLink.
 # English, Dutch and Czech, like VERIFY_OTHER_TAB.
 VERIFY_DEAD_END = {
     "en": {
@@ -215,6 +219,9 @@ VERIFY_DEAD_END = {
         "spGoToApp": "Go to SoccerProject",
         "spLoginRestart": "Log in again",
         "spLoginContinue": "Continue logging in",
+        "spAccountReadyTitle": "Your account is ready",
+        "spAccountReadyText": "One last step: log in to continue.",
+        "spExpiredLinkHint": "Link no longer valid?",
     },
     "nl": {
         "spEmailConfirmedTitle": "Je e-mailadres is bevestigd",
@@ -223,6 +230,9 @@ VERIFY_DEAD_END = {
         "spGoToApp": "Ga naar SoccerProject",
         "spLoginRestart": "Opnieuw inloggen",
         "spLoginContinue": "Verder met inloggen",
+        "spAccountReadyTitle": "Je account is klaar",
+        "spAccountReadyText": "Nog één stap: log in om verder te gaan.",
+        "spExpiredLinkHint": "Werkt de link niet meer?",
     },
     "cs": {
         "spEmailConfirmedTitle": "Tvoje e-mailová adresa je potvrzená",
@@ -231,6 +241,9 @@ VERIFY_DEAD_END = {
         "spGoToApp": "Přejít do SoccerProject",
         "spLoginRestart": "Přihlásit se znovu",
         "spLoginContinue": "Pokračovat v přihlašování",
+        "spAccountReadyTitle": "Tvůj účet je připravený",
+        "spAccountReadyText": "Zbývá poslední krok: přihlas se a pokračuj.",
+        "spExpiredLinkHint": "Odkaz už nefunguje?",
     },
 }
 
@@ -466,6 +479,8 @@ NL_JE = {
 #     (theme#52), instead of "Forgot your password?".
 #   * spResetNoPasswordYet -- under the reset form's button: says so up front,
 #     with the reset mail's spResetNoPassword (email bundles) saying it again.
+#     The second mail comes only while the address is unconfirmed: an account
+#     that confirmed it but left the password step gets one (theme#63).
 #   * emailExistsMessage -- Keycloak's "Email already exists." in our voice.
 # English, Dutch and Czech, like MANAGER_NAME.
 NO_PASSWORD_YET = {
@@ -475,7 +490,7 @@ NO_PASSWORD_YET = {
         "spNoPasswordYet": "Created an account but no password yet?",
         "spGetNewLink": "Get a new link",
         "spNewLinkTitle": "Get a new link",
-        "spResetNoPasswordYet": "No password yet? This form works for you too. You get two emails: the first one’s link sends the second, which confirms your address. Then you choose your password.",
+        "spResetNoPasswordYet": "No password yet? This form works for you too. The link in the email takes you to choosing your password. If your address is not confirmed yet, one more email comes first, to confirm it.",
         "emailExistsMessage": "There is already an account with this email address.",
     },
     "nl": {
@@ -484,7 +499,7 @@ NO_PASSWORD_YET = {
         "spNoPasswordYet": "Account aangemaakt maar nog geen wachtwoord?",
         "spGetNewLink": "Vraag een nieuwe link aan",
         "spNewLinkTitle": "Een nieuwe link aanvragen",
-        "spResetNoPasswordYet": "Nog geen wachtwoord? Ook dan gebruik je dit formulier. Je krijgt twee mails: de link in de eerste stuurt de tweede, die je adres bevestigt. Daarna kies je je wachtwoord.",
+        "spResetNoPasswordYet": "Nog geen wachtwoord? Ook dan gebruik je dit formulier. Via de link in de e-mail kies je je wachtwoord. Is je adres nog niet bevestigd? Dan krijg je eerst nog een e-mail om het te bevestigen.",
         "emailExistsMessage": "Er is al een account met dit e-mailadres.",
     },
     "cs": {
@@ -493,7 +508,7 @@ NO_PASSWORD_YET = {
         "spNoPasswordYet": "Účet je vytvořený, ale heslo ještě nemáš?",
         "spGetNewLink": "Pošli mi nový odkaz",
         "spNewLinkTitle": "Nový odkaz e-mailem",
-        "spResetNoPasswordYet": "Ještě nemáš heslo? I tak použij tento formulář. Dostaneš dva e-maily: odkaz v prvním pošle druhý, který potvrdí tvou adresu. Pak si zvolíš heslo.",
+        "spResetNoPasswordYet": "Ještě nemáš heslo? I tak použij tento formulář. Přes odkaz v e-mailu si zvolíš heslo. Pokud adresa ještě není potvrzená, přijde ti nejdřív ještě jeden e-mail k jejímu potvrzení.",
         "emailExistsMessage": "S touto e-mailovou adresou už účet existuje.",
     },
 }
@@ -532,6 +547,38 @@ STALE_TAB = {
     },
 }
 
+# The banner on a non-production deployment (#53) was English on every page
+# (theme#66). template.ftl draws it from these, one whole phrase per kind, as
+# the word order differs ("Development environment", "Ontwikkelomgeving").
+# spEnvNamed takes theme.properties' environment= when it is none of the kinds.
+# English, Dutch and Czech: the only languages the picker offers.
+ENV_BANNER = {
+    "en": {
+        "spEnvLocal": "Local environment",
+        "spEnvDev": "Development environment",
+        "spEnvTest": "Test environment",
+        "spEnvStaging": "Staging environment",
+        "spEnvNonprod": "Non-production environment",
+        "spEnvNamed": "{0} environment",
+    },
+    "nl": {
+        "spEnvLocal": "Lokale omgeving",
+        "spEnvDev": "Ontwikkelomgeving",
+        "spEnvTest": "Testomgeving",
+        "spEnvStaging": "Stagingomgeving",
+        "spEnvNonprod": "Geen productieomgeving",
+        "spEnvNamed": "Omgeving: {0}",
+    },
+    "cs": {
+        "spEnvLocal": "Lokální prostředí",
+        "spEnvDev": "Vývojové prostředí",
+        "spEnvTest": "Testovací prostředí",
+        "spEnvStaging": "Předprodukční prostředí",
+        "spEnvNonprod": "Neprodukční prostředí",
+        "spEnvNamed": "Prostředí: {0}",
+    },
+}
+
 # The partial sets, in the order they are written to each file:
 # (name, per-locale dict, the comment above the block).
 PARTIAL = [
@@ -540,6 +587,7 @@ PARTIAL = [
     ("VERIFY_WAY_OUT", VERIFY_WAY_OUT, "Verify-email page: wrong address, start again (see VERIFY_WAY_OUT)."),
     ("VERIFY_DEAD_END", VERIFY_DEAD_END, "Verify link in a second browser: one button into the app (see VERIFY_DEAD_END)."),
     ("SET_PASSWORD", SET_PASSWORD, "The first password is chosen, not changed (see SET_PASSWORD)."),
+    ("ENV_BANNER", ENV_BANNER, "Non-production banner (see ENV_BANNER)."),
     ("STALE_TAB", STALE_TAB, "Sign-up tab reloaded after the link was used elsewhere (see STALE_TAB)."),
     ("NO_PASSWORD_YET", NO_PASSWORD_YET, "The account that never chose a password (see NO_PASSWORD_YET)."),
     ("PASSWORD_RULES", PASSWORD_RULES, "Password rules, all shown up front, singular and plural (see PASSWORD_RULES)."),
@@ -574,7 +622,7 @@ M["en"] = dict(
     spContinueWith="Continue with {0}",
     spOrUseEmail="or use an email address",
     spWaysTitle="Two ways in",
-    spWaySocial="Continue with your Google or Facebook account — no new password to remember.",
+    spWaySocial="Continue with your Google or Facebook account. No new password to remember.",
     spWayEmail="Or create a new account with any other email address.",
     spWayEmailOnly="Create a new account with any email address.",
     spRegisterLead="Continue with your Google or Facebook account, or create a new account with any other email address.",
@@ -604,7 +652,7 @@ M["nl"] = dict(
     spContinueWith="Doorgaan met {0}",
     spOrUseEmail="of gebruik een e-mailadres",
     spWaysTitle="Twee manieren om te starten",
-    spWaySocial="Ga verder met je Google- of Facebook-account — geen nieuw wachtwoord om te onthouden.",
+    spWaySocial="Ga verder met je Google- of Facebook-account. Je hoeft geen nieuw wachtwoord te onthouden.",
     spWayEmail="Of maak een nieuw account aan met een ander e-mailadres.",
     spWayEmailOnly="Maak een nieuw account aan met eender welk e-mailadres.",
     spRegisterLead="Ga verder met je Google- of Facebook-account, of maak een nieuw account aan met een ander e-mailadres.",
@@ -847,7 +895,7 @@ M["cs"] = dict(
     spContinueWith="Pokračovat přes {0}",
     spOrUseEmail="nebo použij e-mailovou adresu",
     spWaysTitle="Dvě cesty dovnitř",
-    spWaySocial="Pokračuj se svým účtem Google nebo Facebook — žádné nové heslo k zapamatování.",
+    spWaySocial="Pokračuj se svým účtem Google nebo Facebook. Nemusíš si pamatovat žádné nové heslo.",
     spWayEmail="Nebo si vytvoř nový účet s jakoukoli jinou e-mailovou adresou.",
     spWayEmailOnly="Vytvoř si nový účet s jakoukoli e-mailovou adresou.",
     spRegisterLead="Pokračuj se svým účtem Google nebo Facebook, nebo si vytvoř nový účet s jakoukoli jinou e-mailovou adresou.",
