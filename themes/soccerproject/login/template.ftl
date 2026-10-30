@@ -495,6 +495,23 @@
       });
     });
 
+    // ---- Into the reset page (theme#52) ----
+    // Keycloak starts reset-credentials without the address typed on the login
+    // or register form, and gives "Get a new link" and "Forgot password?" one
+    // page. The link says which one it is and where the address is; the reset
+    // page reads it back (login-reset-password.ftl). Per tab, so nothing stays.
+    Array.prototype.forEach.call(document.querySelectorAll('a[data-sp-reset]'), function (a) {
+      a.addEventListener('click', function () {
+        var from = document.getElementById(a.getAttribute('data-sp-reset-from'));
+        try {
+          sessionStorage.setItem('sp-reset', JSON.stringify({
+            intent: a.getAttribute('data-sp-reset'),
+            username: from ? from.value.trim() : ''
+          }));
+        } catch (e) { /* storage off: the page works as before */ }
+      });
+    });
+
     // ---- Password reveal (progressive enhancement) ----
     // Our own forms use [data-sp-eye]; inherited base pages use Keycloak's
     // [data-password-toggle] and its own passwordVisibility.js, which this must

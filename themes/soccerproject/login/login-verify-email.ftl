@@ -56,8 +56,31 @@
             <p class="instruction">
                 ${msg("emailVerifyInstruction2")}
                 <br/>
-                <a id="sp-verify-resend" href="${url.loginAction}">${msg("doClickHere")}</a> ${msg("emailVerifyInstruction3")}
+                <#-- sp_resent=1 marks the page that the click renders; Keycloak ignores it. -->
+                <a id="sp-verify-resend" href="${url.loginAction}${url.loginAction?contains("?")?then("&", "?")}sp_resent=1">${msg("doClickHere")}</a> ${msg("emailVerifyInstruction3")}
             </p>
+            <#-- theme#54: after a resend the page looked the same as before, and
+                 Keycloak sets no message for it. Shown only when no error is,
+                 and the marker leaves the address bar, so a reload says nothing. -->
+            <#if ((message.type)!"") != "error">
+                <script>
+                  (function () {
+                    if (!/[?&]sp_resent=1(&|$)/.test(window.location.search)) return;
+                    var form = document.querySelector('.sp-card .instruction');
+                    if (!form) return;
+                    var note = document.createElement('div');
+                    note.id = 'sp-verify-resent';
+                    note.className = 'sp-alert sp-alert--success';
+                    note.setAttribute('role', 'status');
+                    note.textContent = '${msg("spVerifyResent")?js_string?no_esc}';
+                    form.parentNode.insertBefore(note, form);
+                    if (window.history.replaceState) {
+                      var q = window.location.search.replace(/([?&])sp_resent=1(&|$)/, function (m, a, b) { return b ? a : ''; });
+                      window.history.replaceState(null, '', window.location.pathname + q + window.location.hash);
+                    }
+                  })();
+                </script>
+            </#if>
             <#if spWait gt 0>
                 <p id="sp-verify-resend-wait" class="instruction" role="status"
                    data-wait="${spWait?c}" data-text="${msg("spVerifyResendWait", "§")}"></p>

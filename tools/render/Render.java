@@ -425,6 +425,13 @@ public class Render {
         cases.add(new Object[]{"error.ftl", "error-no-auth-session",
             Map.of("auth", quietAuth, "message", expired, "client", appClient, "url", noActionUrl),
             Collections.<String>emptySet()});
+        // The sign-up tab reloaded after the link was followed in another browser
+        // (theme#60): no auth session, and the "restart cookie" error.
+        cases.add(new Object[]{"error.ftl", "error-stale-tab",
+            Map.of("auth", quietAuth, "message", Map.of("type", "error", "summary",
+                       messages.getProperty("cookieNotFoundMessage", "cookieNotFoundMessage")),
+                   "client", appClient, "url", noActionUrl),
+            Collections.<String>emptySet()});
         // The way into the app on the other flow-ending pages: {element id, href}; "" = none.
         Map<String, String[]> appButton = new HashMap<>();
         appButton.put("page-expired", new String[]{"sp-go-to-app", appUrl});
@@ -433,6 +440,7 @@ public class Render {
         appButton.put("error-expired-action-no-baseurl", new String[]{"backToApplication", siteUrl});
         appButton.put("error-skip-link", new String[]{"backToApplication", ""});
         appButton.put("error-no-auth-session", new String[]{"backToApplication", appUrl});
+        appButton.put("error-stale-tab", new String[]{"backToApplication", appUrl});
 
         // Choose-password page (theme#43): "sign out other devices" only where
         // there can be other devices. Keycloak's warning tells the two apart.
@@ -472,6 +480,7 @@ public class Render {
         // No absolute URL on a page without an auth session (theme#51): the site
         // links are corrected from the browser's host.
         contains.put("error-no-auth-session", new String[]{"window.location.hostname", "1"});
+        contains.put("error-stale-tab", new String[]{messages.getProperty("spStaleTabTitle", "spStaleTabTitle"), "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 
         new File(outDir).mkdirs();
