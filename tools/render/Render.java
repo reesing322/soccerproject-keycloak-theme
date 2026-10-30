@@ -402,7 +402,7 @@ public class Render {
                                     "clientId", "account-console", "attributes", Map.of()),
                    "skipLink", true),
             Collections.<String>emptySet()});
-        // skipLink still hides the way on on any other info page.
+        // On any other info page, skipLink still hides the button.
         cases.add(new Object[]{"info.ftl", "info-skip-link-other",
             Map.of("auth", quietAuth, "message", Map.of("type", "info", "summary", "x"),
                    "pageRedirectUri", appUrl + "after", "actionUri", "", "client", appClient, "skipLink", true),

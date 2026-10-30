@@ -65,7 +65,10 @@ Keycloak cannot resume the sign-up there, and the stock pages offer only
 "« Back to Application", "Action expired" or links that restart Keycloak's own
 login. The forks put one primary button into the app on all three: the
 client's `baseUrl`, or this environment's own site (the masthead link,
-`spAppUrl` in `template.ftl`) when the client has none — and the realm config
+`spAppUrl` in `template.ftl`) when the client has none or is one of
+Keycloak's own (`spSystemClient`: `account`, `account-console`, … — a flow
+that came in without a `client_id` runs on the account console, whose
+`baseUrl` is the Keycloak account page, theme#62) — and the realm config
 sets none on `soccerproject-frontend`, which is why the page-expired and
 email-verified pages had nothing to click (theme#40). On the email-verified page (fresh or already
 verified) that button carries `verified=1` (theme#29), so the app's landing page can tell this visitor from a
@@ -75,6 +78,21 @@ and its title comes through `template.ftl`'s `spTitle`, which outranks
 Keycloak's `messageHeader`. `template.ftl` resolves a key-shaped
 `messageHeader` through `msg()`, as the stock pages do: after required actions
 Keycloak passes the bare key `accountUpdatedTitle`, not formatted text.
+
+A sign-up finished in another browser (verify link, then "Choose a password")
+ends on Keycloak's "Account updated", logged out: Keycloak sets
+`END_AFTER_REQUIRED_ACTIONS` there on purpose, and the theme cannot log anyone
+in (theme#62). `info.ftl` gives that page "Your account is ready", "log in to
+continue" and one Log in button into the app with `verified=1`, also when
+Keycloak sets `skipLink`; this branch ignores `pageRedirectUri`, which is the
+app logged out with no hint. `error.ftl` has three more cases: the sign-up tab
+reloaded after the link was used elsewhere (`cookieNotFoundMessage`, theme#60)
+gets its own title and text; and under the three "Action expired" errors,
+"Link no longer valid? Get a new link" goes to Keycloak's reset-credentials URL
+(theme#63). When the page's client is one of Keycloak's own, or missing, that
+link names the app's client instead (`spAppClientId` in
+`login/theme.properties`), because for the account client Keycloak would end
+the reset logged in on its account console.
 
 The forked base pages are pinned to Keycloak 26.7.1: re-diff each against
 upstream on every Keycloak bump, because a bump will not update them. Every other auth page is Keycloak's own base
