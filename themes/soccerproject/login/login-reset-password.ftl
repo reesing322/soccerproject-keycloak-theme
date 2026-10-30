@@ -78,7 +78,12 @@
         <script>
           (function () {
             var sp;
-            try { sp = JSON.parse(sessionStorage.getItem('sp-reset') || 'null'); } catch (e) { return; }
+            // Read once: a later render of this page in the same tab (reload,
+            // Back) must not bring the old address back.
+            try {
+              sp = JSON.parse(sessionStorage.getItem('sp-reset') || 'null');
+              sessionStorage.removeItem('sp-reset');
+            } catch (e) { return; }
             if (!sp) return;
             var input = document.getElementById('username');
             if (input && !input.value && sp.username) input.value = sp.username;

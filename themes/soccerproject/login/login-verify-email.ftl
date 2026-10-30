@@ -68,12 +68,18 @@
                     if (!/[?&]sp_resent=1(&|$)/.test(window.location.search)) return;
                     var form = document.querySelector('.sp-card .instruction');
                     if (!form) return;
+                    // The markup of template.ftl's success alert. The live region
+                    // goes in empty and gets its text after, or a screen reader
+                    // may not announce it.
                     var note = document.createElement('div');
                     note.id = 'sp-verify-resent';
                     note.className = 'sp-alert sp-alert--success';
                     note.setAttribute('role', 'status');
-                    note.textContent = '${msg("spVerifyResent")?js_string?no_esc}';
                     form.parentNode.insertBefore(note, form);
+                    setTimeout(function () {
+                      note.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span></span>';
+                      note.lastChild.textContent = '${msg("spVerifyResent")?js_string?no_esc}';
+                    }, 100);
                     if (window.history.replaceState) {
                       var q = window.location.search.replace(/([?&])sp_resent=1(&|$)/, function (m, a, b) { return b ? a : ''; });
                       window.history.replaceState(null, '', window.location.pathname + q + window.location.hash);

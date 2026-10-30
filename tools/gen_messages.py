@@ -502,8 +502,10 @@ NO_PASSWORD_YET = {
 # (theme#60). Keycloak has dropped that tab's login by then and answers with
 # cookieNotFoundMessage, whose stock text blames cookies and points at a "Back
 # to Application" button this theme does not draw. error.ftl gives that one
-# error spStaleTabTitle and the button into the app. The text cannot know the
-# cause, so it names the likely one first and cookies second.
+# error spStaleTabTitle and the button into the app. Keycloak also raises it
+# for blocked cookies and a login ended in another tab, and the page cannot
+# tell them apart: so the text says "log in" to everyone, then the sign-up
+# case, then cookies.
 # confirmEmailAddressVerification[Header] is Keycloak's extra "confirm" page
 # for a fresh link in a browser without the sign-up session (info.ftl), in
 # Keycloak's wording ("e-mail address validation") until now.
@@ -512,19 +514,19 @@ NO_PASSWORD_YET = {
 STALE_TAB = {
     "en": {
         "spStaleTabTitle": "This page has expired",
-        "cookieNotFoundMessage": "This sign-up or login page is no longer active. Did you confirm your email in another browser or on your phone? Then your account is ready: go to SoccerProject and log in there. If cookies are off in your browser, turn them on first.",
+        "cookieNotFoundMessage": "This page is no longer active. Go to SoccerProject and log in there. Did you sign up and confirm your email in another browser or on your phone? Then your account is ready. If cookies are off in your browser, turn them on first.",
         "confirmEmailAddressVerificationHeader": "Confirm your email",
         "confirmEmailAddressVerification": "Confirm that {0} is your email address.",
     },
     "nl": {
         "spStaleTabTitle": "Deze pagina is verlopen",
-        "cookieNotFoundMessage": "Deze aanmeld- of inlogpagina is niet meer actief. Heb je je e-mailadres bevestigd in een andere browser of op je telefoon? Dan is je account klaar: ga naar SoccerProject en log daar in. Staan cookies uit in je browser? Zet ze dan eerst aan.",
+        "cookieNotFoundMessage": "Deze pagina is niet meer actief. Ga naar SoccerProject en log daar in. Heb je je aangemeld en je e-mailadres bevestigd in een andere browser of op je telefoon? Dan is je account klaar. Staan cookies uit in je browser? Zet ze dan eerst aan.",
         "confirmEmailAddressVerificationHeader": "Bevestig je e-mailadres",
         "confirmEmailAddressVerification": "Bevestig dat {0} je e-mailadres is.",
     },
     "cs": {
         "spStaleTabTitle": "Platnost této stránky vypršela",
-        "cookieNotFoundMessage": "Tato stránka pro registraci nebo přihlášení už není aktivní. Máš e-mail potvrzený v jiném prohlížeči nebo v telefonu? Pak je tvůj účet připravený: přejdi do SoccerProject a přihlas se tam. Pokud máš v prohlížeči vypnuté cookies, nejdřív je zapni.",
+        "cookieNotFoundMessage": "Tato stránka už není aktivní. Přejdi do SoccerProject a přihlas se tam. Máš e-mail potvrzený v jiném prohlížeči nebo v telefonu? Pak je tvůj účet připravený. Pokud máš v prohlížeči vypnuté cookies, nejdřív je zapni.",
         "confirmEmailAddressVerificationHeader": "Potvrď svůj e-mail",
         "confirmEmailAddressVerification": "Potvrď, že {0} je tvoje e-mailová adresa.",
     },
