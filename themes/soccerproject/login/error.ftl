@@ -10,7 +10,8 @@
   this environment's site), still hidden when Keycloak sets skipLink.
 
   theme#60: the sign-up tab reloaded after the link was followed in another
-  browser ends here with "cookieNotFoundMessage" (HTTP 400). Keycloak has
+  browser ends here with "cookieNotFoundMessage" or "invalidCodeMessage"
+  (HTTP 400). Keycloak has
   dropped that tab's login, and nothing here tells why. That one error gets
   its own title, a text that names the likely cause and says to log in
   (STALE_TAB in tools/gen_messages.py), and "Go to SoccerProject", the words
@@ -19,11 +20,16 @@
   theme#63: under the three "Action expired" errors, "Link no longer valid?
   Get a new link" to Keycloak's reset-credentials URL, for the app's client
   (spAppClientId) when the page's client is one of Keycloak's own
-  (layout.spSystemClient) or missing.
+  (layout.spSystemClient) or missing. Only the no-session one reaches this
+  page in practice: with a live auth session Keycloak shows "Action expired.
+  Please start again." on the login form, next to its "Forgot password?".
 -->
 <#import "template.ftl" as layout>
 <#assign spSummaryText = (message.summary)!"">
-<#assign spStaleTab = spSummaryText == msg("cookieNotFoundMessage")>
+<#-- The same reload gives invalidCodeMessage when the tab still has its
+     auth-session cookie (seen on a local Keycloak 26.7.1), and
+     cookieNotFoundMessage when it has not (beta). Both get our text. -->
+<#assign spStaleTab = spSummaryText == msg("cookieNotFoundMessage") || spSummaryText == msg("invalidCodeMessage")>
 <#-- theme#63: an expired link (reset or verify) left no way to a new one. The
      reset-credentials URL works without a session ("applications may link to
      reset credentials"). Keycloak puts the page's client_id and tab_id on it,
@@ -48,7 +54,7 @@
         ${kcSanitize(msg("errorTitle"))?no_esc}
     <#elseif section = "form">
         <div id="kc-error-message">
-            <p class="instruction">${kcSanitize(message.summary)?no_esc}</p>
+            <p class="instruction"><#if spStaleTab>${msg("cookieNotFoundMessage")}<#else>${kcSanitize(message.summary)?no_esc}</#if></p>
             <#if traceId??>
                 <p class="instruction" id="traceId">${msg("traceIdSupportMessage", traceId)}</p>
             </#if>

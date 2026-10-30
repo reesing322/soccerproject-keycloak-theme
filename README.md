@@ -86,15 +86,17 @@ in (theme#62). `info.ftl` gives that page "Your account is ready", "log in to
 continue" and one Log in button into the app with `verified=1`, also when
 Keycloak sets `skipLink`; this branch ignores `pageRedirectUri`, which is the
 app logged out with no hint. `error.ftl` has three more cases: the sign-up tab
-reloaded after the link was used elsewhere (`cookieNotFoundMessage`, theme#60)
-gets its own title and text; and under the three "Action expired" errors,
+reloaded after the link was used elsewhere (`cookieNotFoundMessage`, or
+`invalidCodeMessage` while the tab still has its auth-session cookie, theme#60)
+gets its own title and text; and under the "Action expired" errors,
 "Link no longer valid? Get a new link" goes to Keycloak's reset-credentials URL
 (theme#63). Keycloak puts a `client_id` on that URL only when there is an auth
 session; without one, or with one of Keycloak's own clients, the reset would
 run on the account client and end logged in on its account console. So the
 link names the page's client, or the app's (`spAppClientId` in
 `login/theme.properties`) when the page's client is one of Keycloak's own or
-missing.
+missing. With a live auth session Keycloak shows an expired link on the login
+form instead, where "Forgot password?" is the way to a new one.
 
 The forked base pages are pinned to Keycloak 26.7.1: re-diff each against
 upstream on every Keycloak bump, because a bump will not update them. Every other auth page is Keycloak's own base

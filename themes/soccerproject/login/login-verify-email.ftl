@@ -56,37 +56,45 @@
             <p class="instruction">
                 ${msg("emailVerifyInstruction2")}
                 <br/>
-                <#-- sp_resent=1 marks the page that the click renders; Keycloak ignores it. -->
-                <a id="sp-verify-resend" href="${url.loginAction}${url.loginAction?contains("?")?then("&", "?")}sp_resent=1">${msg("doClickHere")}</a> ${msg("emailVerifyInstruction3")}
+                <a id="sp-verify-resend" href="${url.loginAction}">${msg("doClickHere")}</a> ${msg("emailVerifyInstruction3")}
             </p>
             <#-- theme#54: after a resend the page looked the same as before, and
-                 Keycloak sets no message for it. Shown only when no error is,
-                 and the marker leaves the address bar, so a reload says nothing. -->
-            <#if ((message.type)!"") != "error">
-                <script>
-                  (function () {
-                    if (!/[?&]sp_resent=1(&|$)/.test(window.location.search)) return;
-                    var form = document.querySelector('.sp-card .instruction');
-                    if (!form) return;
-                    // The markup of template.ftl's success alert. The live region
-                    // goes in empty and gets its text after, or a screen reader
-                    // may not announce it.
-                    var note = document.createElement('div');
-                    note.id = 'sp-verify-resent';
-                    note.className = 'sp-alert sp-alert--success';
-                    note.setAttribute('role', 'status');
-                    form.parentNode.insertBefore(note, form);
-                    setTimeout(function () {
-                      note.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span></span>';
-                      note.lastChild.textContent = '${msg("spVerifyResent")?js_string?no_esc}';
-                    }, 100);
-                    if (window.history.replaceState) {
-                      var q = window.location.search.replace(/([?&])sp_resent=1(&|$)/, function (m, a, b) { return b ? a : ''; });
-                      window.history.replaceState(null, '', window.location.pathname + q + window.location.hash);
-                    }
-                  })();
-                </script>
-            </#if>
+                 Keycloak sets no message for it. The click leaves a marker in
+                 sessionStorage (per tab), read once by the page it renders. Not
+                 in the URL: Keycloak's own history script (BrowserHistoryHelper)
+                 rewrites the address bar before this script runs, and a marker
+                 there was gone. Shown only when no error is; a click on the link
+                 while its cooldown disables it (no href) sets nothing. -->
+            <script>
+              (function () {
+                var link = document.getElementById('sp-verify-resend');
+                var resent = false;
+                try {
+                  resent = sessionStorage.getItem('sp-resent') === '1';
+                  sessionStorage.removeItem('sp-resent');
+                } catch (e) { /* storage off: no notice */ }
+                if (link) link.addEventListener('click', function () {
+                  if (!link.hasAttribute('href')) return;
+                  try { sessionStorage.setItem('sp-resent', '1'); } catch (e) {}
+                });
+                <#if ((message.type)!"") == "error">resent = false; // an error is shown</#if>
+                if (!resent) return;
+                var form = document.querySelector('.sp-card .instruction');
+                if (!form) return;
+                // The markup of template.ftl's success alert. The live region
+                // goes in empty and gets its text after, or a screen reader
+                // may not announce it.
+                var note = document.createElement('div');
+                note.id = 'sp-verify-resent';
+                note.className = 'sp-alert sp-alert--success';
+                note.setAttribute('role', 'status');
+                form.parentNode.insertBefore(note, form);
+                setTimeout(function () {
+                  note.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span></span>';
+                  note.lastChild.textContent = '${msg("spVerifyResent")?js_string?no_esc}';
+                }, 100);
+              })();
+            </script>
             <#if spWait gt 0>
                 <p id="sp-verify-resend-wait" class="instruction" role="status"
                    data-wait="${spWait?c}" data-text="${msg("spVerifyResendWait", "§")}"></p>
