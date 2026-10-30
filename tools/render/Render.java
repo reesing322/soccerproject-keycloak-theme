@@ -402,6 +402,11 @@ public class Render {
                                     "clientId", "account-console", "attributes", Map.of()),
                    "skipLink", true),
             Collections.<String>emptySet()});
+        // Any other info page with a pageRedirectUri: stock order, that URI first.
+        cases.add(new Object[]{"info.ftl", "info-page-redirect-other",
+            Map.of("auth", quietAuth, "message", Map.of("type", "info", "summary", "x"),
+                   "pageRedirectUri", appUrl + "after", "actionUri", "", "client", appClient),
+            Collections.<String>emptySet()});
         // On any other info page, skipLink still hides the button.
         cases.add(new Object[]{"info.ftl", "info-skip-link-other",
             Map.of("auth", quietAuth, "message", Map.of("type", "info", "summary", "x"),
@@ -450,6 +455,13 @@ public class Render {
             Map.of("auth", quietAuth, "message", expired, "client",
                    Map.of("baseUrl", appUrl, "clientId", "sp-app-test", "attributes", Map.of())),
             Collections.<String>emptySet()});
+        // No client bean, but Keycloak's URL names its account client (theme#63).
+        Map<String, Object> noBeanUrl = new HashMap<>(url);
+        noBeanUrl.put("loginResetCredentialsUrl", url.get("loginResetCredentialsUrl") + "?client_id=account-console&tab_id=t3");
+        cases.add(new Object[]{"error.ftl", "error-expired-action-url-system-client",
+            Map.of("auth", quietAuth, "message", expired, "url", noBeanUrl,
+                   "client", Map.of("baseUrl", "", "attributes", Map.of())),
+            Collections.<String>emptySet()});
         cases.add(new Object[]{"error.ftl", "error-skip-link",
             Map.of("auth", quietAuth, "message", expired, "client", appClient, "skipLink", true),
             Collections.<String>emptySet()});
@@ -469,6 +481,12 @@ public class Render {
             Collections.<String>emptySet()});
         // The sign-up tab reloaded after the link was followed in another browser
         // (theme#60): no auth session, and the "restart cookie" error.
+        // The same reload while the tab keeps its auth-session cookie.
+        cases.add(new Object[]{"error.ftl", "error-stale-tab-invalid-code",
+            Map.of("auth", quietAuth, "message", Map.of("type", "error", "summary",
+                       messages.getProperty("invalidCodeMessage", "invalidCodeMessage")),
+                   "client", appClient, "url", noActionUrl),
+            Collections.<String>emptySet()});
         cases.add(new Object[]{"error.ftl", "error-stale-tab",
             Map.of("auth", quietAuth, "message", Map.of("type", "error", "summary",
                        messages.getProperty("cookieNotFoundMessage", "cookieNotFoundMessage")),
@@ -482,10 +500,12 @@ public class Render {
         appButton.put("error-expired-action-no-baseurl", new String[]{"backToApplication", siteUrl});
         appButton.put("error-skip-link", new String[]{"backToApplication", ""});
         appButton.put("error-no-auth-session", new String[]{"backToApplication", appUrl});
+        appButton.put("error-stale-tab-invalid-code", new String[]{"backToApplication", appUrl});
         appButton.put("error-stale-tab", new String[]{"backToApplication", appUrl});
         appButton.put("error-expired-action-account-console", new String[]{"backToApplication", siteUrl});
         appButton.put("info-page-redirect", new String[]{"sp-info-login", appUrl + "?verified=1"});
         appButton.put("info-account-ready-account-console", new String[]{"sp-info-login", siteUrl + "?verified=1"});
+        appButton.put("info-page-redirect-other", new String[]{"sp-info-continue", appUrl + "after"});
         appButton.put("info-skip-link-other", new String[]{"sp-info-continue", ""});
         appButton.put("info-skip-link", new String[]{"sp-info-login", appUrl + "?verified=1"});
 
@@ -519,13 +539,13 @@ public class Render {
         Map<String, String[]> contains = new HashMap<>();
         contains.put("update-password-sign-up", new String[]{"id=\"logout-sessions\"", "0"});
         contains.put("update-password-reset", new String[]{"id=\"logout-sessions\"", "1"});
-        // The resend notice (theme#54): its marker on the link, its text, and the
-        // element its script inserts before; not on a page with an error.
+        // The resend notice (theme#54): its sessionStorage marker, its text, and
+        // the element its script inserts before; an error page drops the marker.
         contains.put("inherited-login-verify-email", new String[]{"data-wait=\"30\"", "1",
-            "sp_resent=1", "1", messages.getProperty("spVerifyResent", "spVerifyResent"), "1",
-            "<p class=\"instruction\">", "1"});
+            "sessionStorage.setItem('sp-resent', '1')", "1", messages.getProperty("spVerifyResent", "spVerifyResent"), "1",
+            "<p class=\"instruction\">", "1", "// an error is shown", "0"});
         contains.put("verify-email-cooldown", new String[]{"data-wait=\"6\"", "1",
-            messages.getProperty("spVerifyResent", "spVerifyResent"), "0"});
+            "// an error is shown", "1"});
         // "Get a new link" (theme#52): the title the script sets, and its target.
         contains.put("inherited-login-reset-password", new String[]{
             messages.getProperty("spNewLinkTitle", "spNewLinkTitle"), "1", "class=\"sp-card__title\"", "1"});
@@ -537,6 +557,8 @@ public class Render {
         contains.put("error-no-auth-session", new String[]{"window.location.hostname", "1"});
         contains.put("error-stale-tab", new String[]{messages.getProperty("spStaleTabTitle", "spStaleTabTitle"), "1",
             ">" + messages.getProperty("spGoToApp", "spGoToApp") + "<", "1", "id=\"sp-expired-new-link\"", "0"});
+        contains.put("error-stale-tab-invalid-code", new String[]{messages.getProperty("spStaleTabTitle", "spStaleTabTitle"), "1",
+            messages.getProperty("cookieNotFoundMessage", "cookieNotFoundMessage"), "1"});
         contains.put("error-expired-action", new String[]{"id=\"sp-expired-new-link\"", "1"});
         contains.put("error-expired-action-client-id", new String[]{"loginResetCredentialsUrl?client_id=soccerproject-frontend&amp;tab_id=t2\"", "1"});
         contains.put("error-expired-action-account-console", new String[]{
@@ -546,6 +568,8 @@ public class Render {
             "loginResetCredentialsUrl?client_id=soccerproject-frontend\"", "1", "tab_id=", "0"});
         contains.put("error-expired-action-app-no-session", new String[]{
             "loginResetCredentialsUrl?client_id=sp-app-test\"", "1"});
+        contains.put("error-expired-action-url-system-client", new String[]{
+            "loginResetCredentialsUrl?client_id=soccerproject-frontend\"", "1", "account-console", "0"});
         contains.put("info-page-redirect", new String[]{messages.getProperty("spAccountReadyTitle", "spAccountReadyTitle"), "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 

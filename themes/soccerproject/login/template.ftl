@@ -62,8 +62,8 @@
      is the client of a flow that came in without a client_id, such as the
      verify or reset link opened in another browser, and its baseUrl is the
      Keycloak account page. -->
-<#function spSystemClient>
-  <#return ["account", "account-console", "security-admin-console", "admin-cli", "broker", "realm-management"]?seq_contains((client.clientId)!"")>
+<#function spSystemClient id=(client.clientId)!"">
+  <#return ["account", "account-console", "security-admin-console", "admin-cli", "broker", "realm-management"]?seq_contains(id)>
 </#function>
 <#function spAppUrl>
   <#local spBase = (client.baseUrl)!"">
