@@ -89,10 +89,12 @@ app logged out with no hint. `error.ftl` has three more cases: the sign-up tab
 reloaded after the link was used elsewhere (`cookieNotFoundMessage`, theme#60)
 gets its own title and text; and under the three "Action expired" errors,
 "Link no longer valid? Get a new link" goes to Keycloak's reset-credentials URL
-(theme#63). When the page's client is one of Keycloak's own, or missing, that
-link names the app's client instead (`spAppClientId` in
-`login/theme.properties`), because for the account client Keycloak would end
-the reset logged in on its account console.
+(theme#63). Keycloak puts a `client_id` on that URL only when there is an auth
+session; without one, or with one of Keycloak's own clients, the reset would
+run on the account client and end logged in on its account console. So the
+link names the page's client, or the app's (`spAppClientId` in
+`login/theme.properties`) when the page's client is one of Keycloak's own or
+missing.
 
 The forked base pages are pinned to Keycloak 26.7.1: re-diff each against
 upstream on every Keycloak bump, because a bump will not update them. Every other auth page is Keycloak's own base

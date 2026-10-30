@@ -26,18 +26,22 @@
 <#assign spStaleTab = spSummaryText == msg("cookieNotFoundMessage")>
 <#-- theme#63: an expired link (reset or verify) left no way to a new one. The
      reset-credentials URL works without a session ("applications may link to
-     reset credentials"); Keycloak puts the page's client_id and tab_id on it.
-     When that client is one of Keycloak's own, or there is none, the link
-     drops them and names the app's client (spAppClientId in theme.properties)
-     instead: for the account client, Keycloak would end the reset logged in on
-     its account console. For the app's client and no redirect_uri, it ends on
-     info.ftl's "Your account is ready" (theme#62). -->
+     reset credentials"). Keycloak puts the page's client_id and tab_id on it,
+     but only when there is an auth session. A URL without client_id, or with
+     one of Keycloak's own, would run the reset on the account client and end
+     it logged in on the account console. Such a URL gets the page's client,
+     or the app's (spAppClientId in theme.properties) when the page's client is
+     one of Keycloak's own or missing. For the app's client and no
+     redirect_uri, Keycloak ends on info.ftl's "Your account is ready"
+     (theme#62). -->
 <#assign spExpiredLink = spSummaryText == msg("expiredActionMessage") || spSummaryText == msg("expiredActionTokenNoSessionMessage")
   || spSummaryText == msg("expiredActionTokenSessionExistsMessage")>
 <#assign spResetUrl = url.loginResetCredentialsUrl>
-<#assign spAppClientId = properties.spAppClientId!"">
-<#if spAppClientId?has_content && (!(client.clientId)?has_content || layout.spSystemClient())>
-  <#assign spResetUrl = spResetUrl?keep_before("?") + "?client_id=" + spAppClientId?url("UTF-8")>
+<#-- The client the reset runs for: the page's, unless that is one of
+     Keycloak's own or missing; then the app's (spAppClientId). -->
+<#assign spResetClient = (!(client.clientId)?has_content || layout.spSystemClient())?then(properties.spAppClientId!"", client.clientId)>
+<#if spResetClient?has_content && (layout.spSystemClient() || !spResetUrl?contains("client_id="))>
+  <#assign spResetUrl = spResetUrl?keep_before("?") + "?client_id=" + spResetClient?url("UTF-8")>
 </#if>
 <@layout.registrationLayout displayMessage=false spTitle=spStaleTab?then(msg("spStaleTabTitle"), ""); section>
     <#if section = "header">

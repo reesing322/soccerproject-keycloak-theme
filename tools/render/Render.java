@@ -444,6 +444,12 @@ public class Render {
                    Map.of("baseUrl", "https://auth.example.com/realms/soccerproject/account/",
                           "clientId", "account-console", "attributes", Map.of())),
             Collections.<String>emptySet()});
+        // The app's own client and no auth session: Keycloak's URL has no
+        // client_id, so the link names the page's client (theme#63).
+        cases.add(new Object[]{"error.ftl", "error-expired-action-app-no-session",
+            Map.of("auth", quietAuth, "message", expired, "client",
+                   Map.of("baseUrl", appUrl, "clientId", "sp-app-test", "attributes", Map.of())),
+            Collections.<String>emptySet()});
         cases.add(new Object[]{"error.ftl", "error-skip-link",
             Map.of("auth", quietAuth, "message", expired, "client", appClient, "skipLink", true),
             Collections.<String>emptySet()});
@@ -538,6 +544,8 @@ public class Render {
         // Keycloak's URL already carrying the page's own client and tab (theme#63).
         contains.put("error-expired-action-system-url", new String[]{
             "loginResetCredentialsUrl?client_id=soccerproject-frontend\"", "1", "tab_id=", "0"});
+        contains.put("error-expired-action-app-no-session", new String[]{
+            "loginResetCredentialsUrl?client_id=sp-app-test\"", "1"});
         contains.put("info-page-redirect", new String[]{messages.getProperty("spAccountReadyTitle", "spAccountReadyTitle"), "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 
