@@ -425,6 +425,13 @@ public class Render {
         cases.add(new Object[]{"error.ftl", "error-no-auth-session",
             Map.of("auth", quietAuth, "message", expired, "client", appClient, "url", noActionUrl),
             Collections.<String>emptySet()});
+        // The sign-up tab reloaded after the link was followed in another browser
+        // (theme#60): no auth session, and the "restart cookie" error.
+        cases.add(new Object[]{"error.ftl", "error-stale-tab",
+            Map.of("auth", quietAuth, "message", Map.of("type", "error", "summary",
+                       messages.getProperty("cookieNotFoundMessage", "cookieNotFoundMessage")),
+                   "client", appClient, "url", noActionUrl),
+            Collections.<String>emptySet()});
         // The way into the app on the other flow-ending pages: {element id, href}; "" = none.
         Map<String, String[]> appButton = new HashMap<>();
         appButton.put("page-expired", new String[]{"sp-go-to-app", appUrl});
@@ -433,6 +440,7 @@ public class Render {
         appButton.put("error-expired-action-no-baseurl", new String[]{"backToApplication", siteUrl});
         appButton.put("error-skip-link", new String[]{"backToApplication", ""});
         appButton.put("error-no-auth-session", new String[]{"backToApplication", appUrl});
+        appButton.put("error-stale-tab", new String[]{"backToApplication", appUrl});
 
         // Choose-password page (theme#43): "sign out other devices" only where
         // there can be other devices. Keycloak's warning tells the two apart.
@@ -460,18 +468,28 @@ public class Render {
         devUrl.put("registrationAction", devAuth + "registration");
         cases.add(new Object[]{"register.ftl", "register-dev-relative-urls",
             Map.of("auth", quietAuth, "message", Map.of(), "url", devUrl), Collections.<String>emptySet()});
-        // label -> {needle, "1" if the page must contain it, "0" if it must not}
+        // label -> {needle, "1" if the page must contain it, "0" if it must not, ...}
         Map<String, String[]> contains = new HashMap<>();
         contains.put("update-password-sign-up", new String[]{"id=\"logout-sessions\"", "0"});
         contains.put("update-password-reset", new String[]{"id=\"logout-sessions\"", "1"});
-        contains.put("verify-email-cooldown", new String[]{"data-wait=\"6\"", "1"});
-        contains.put("inherited-login-verify-email", new String[]{"data-wait=\"30\"", "1"});
+        // The resend notice (theme#54): its marker on the link, its text, and the
+        // element its script inserts before; not on a page with an error.
+        contains.put("inherited-login-verify-email", new String[]{"data-wait=\"30\"", "1",
+            "sp_resent=1", "1", messages.getProperty("spVerifyResent", "spVerifyResent"), "1",
+            "<p class=\"instruction\">", "1"});
+        contains.put("verify-email-cooldown", new String[]{"data-wait=\"6\"", "1",
+            messages.getProperty("spVerifyResent", "spVerifyResent"), "0"});
+        // "Get a new link" (theme#52): the title the script sets, and its target.
+        contains.put("inherited-login-reset-password", new String[]{
+            messages.getProperty("spNewLinkTitle", "spNewLinkTitle"), "1", "class=\"sp-card__title\"", "1"});
         // Each rule carries its check and Keycloak's message for it (theme#41).
         contains.put("register-dev-relative-urls",
             new String[]{"href=\"https://www.development.soccerproject.com/legal/terms\"", "1"});
         // No absolute URL on a page without an auth session (theme#51): the site
         // links are corrected from the browser's host.
         contains.put("error-no-auth-session", new String[]{"window.location.hostname", "1"});
+        contains.put("error-stale-tab", new String[]{messages.getProperty("spStaleTabTitle", "spStaleTabTitle"), "1",
+            ">" + messages.getProperty("spGoToApp", "spGoToApp") + "<", "1"});
         contains.put("inherited-login-update-password", new String[]{"data-rule=\"length\" data-n=\"8\"", "1"});
 
         new File(outDir).mkdirs();
@@ -522,8 +540,9 @@ public class Render {
                     if (!got.equals(button[1])) throw new IllegalStateException(button[0] + " href " + got + ", want " + button[1]);
                 }
                 String[] needle = contains.get(label);
-                if (needle != null && html.contains(needle[0]) != "1".equals(needle[1]))
-                    throw new IllegalStateException(("1".equals(needle[1]) ? "missing " : "unexpected ") + needle[0]);
+                for (int i = 0; needle != null && i < needle.length; i += 2)
+                    if (html.contains(needle[i]) != "1".equals(needle[i + 1]))
+                        throw new IllegalStateException(("1".equals(needle[i + 1]) ? "missing " : "unexpected ") + needle[i]);
                 System.out.printf("OK    %-34s %6d bytes%n", label, html.length());
             } catch (Exception e) {
                 failures++;

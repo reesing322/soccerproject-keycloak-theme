@@ -18,7 +18,7 @@ Two families of keys are written in every locale:
 
 Further sets go to some locales only, so the files are deliberately not all
 equal: EN_ONLY (en); MANAGER_NAME, VERIFY_OTHER_TAB, VERIFY_WAY_OUT, VERIFY_DEAD_END,
-SET_PASSWORD, NO_PASSWORD_YET and PASSWORD_RULES (en, nl, cs); NL_JE (nl). The partial sets are listed in PARTIAL.
+STALE_TAB, SET_PASSWORD, NO_PASSWORD_YET and PASSWORD_RULES (en, nl, cs); NL_JE (nl). The partial sets are listed in PARTIAL.
 
 Dutch addresses the reader as "je", never "u" (theme#20): the game does, and
 the generator refuses a formal "u"/"uw" in any Dutch value.
@@ -184,18 +184,22 @@ VERIFY_WAY_OUT = {
         "spVerifyStartAgainHint": "and create your club with the right one, under a new manager name.",
         # Under the resend link while the cooldown runs (theme#43).
         "spVerifyResendWait": "You can ask for a new link in {0} s.",
+        # After a click on the resend link (theme#54): the page looked unchanged.
+        "spVerifyResent": "We sent you a new email.",
     },
     "nl": {
         "spVerifyWrongAddress": "Verkeerd adres?",
         "spVerifyStartAgain": "Begin opnieuw",
         "spVerifyStartAgainHint": "en maak je club aan met het juiste, onder een nieuwe managernaam.",
         "spVerifyResendWait": "Over {0} s kun je een nieuwe link aanvragen.",
+        "spVerifyResent": "We hebben je een nieuwe e-mail gestuurd.",
     },
     "cs": {
         "spVerifyWrongAddress": "Špatná adresa?",
         "spVerifyStartAgain": "Začni znovu",
         "spVerifyStartAgainHint": "a založ si klub se správnou adresou, pod novým jménem manažera.",
         "spVerifyResendWait": "Nový odkaz si můžeš vyžádat za {0} s.",
+        "spVerifyResent": "Poslali jsme ti nový e-mail.",
     },
 }
 
@@ -367,7 +371,6 @@ NL_JE = {
         "console-accept-terms": "Ga je akkoord met de voorwaarden? [y/n]:",
         "console-update-password": "Je moet je wachtwoord bijwerken.",
         "console-verify-email": "Je moet je e-mailadres bevestigen. We hebben een e-mail met de verificatiecode naar {0} gestuurd. Voer die code hieronder in.",
-        "cookieNotFoundMessage": "Het cookie om opnieuw in te loggen is niet gevonden. Misschien is het verlopen of verwijderd, of staan cookies uit in je browser. Zet cookies aan en klik op Terug naar applicatie om opnieuw in te loggen.",
         "copyCodeInstruction": "Kopieer deze code en plak hem in je app:",
         "delegationCompleteMessage": "Je kunt dit browservenster sluiten en teruggaan naar je consoletoepassing.",
         "delegationFailedMessage": "Je kunt dit browservenster sluiten en teruggaan naar je consoletoepassing om daar opnieuw te proberen in te loggen.",
@@ -459,6 +462,8 @@ NL_JE = {
 #     NOT mark the address verified (theme#52: the action-token branch of
 #     ResetCredentialEmail skips action() in 26.7.1, and 26.8.0 removed the
 #     call on purpose), so VERIFY_EMAIL then sends one more mail.
+#   * spNewLinkTitle -- the reset page's title when "Get a new link" opened it
+#     (theme#52), instead of "Forgot your password?".
 #   * spResetNoPasswordYet -- under the reset form's button: says so up front,
 #     with the reset mail's spResetNoPassword (email bundles) saying it again.
 #   * emailExistsMessage -- Keycloak's "Email already exists." in our voice.
@@ -469,6 +474,7 @@ NO_PASSWORD_YET = {
         "spVerifyPasswordNext": "New account? The link is where you choose your password.",
         "spNoPasswordYet": "Created an account but no password yet?",
         "spGetNewLink": "Get a new link",
+        "spNewLinkTitle": "Get a new link",
         "spResetNoPasswordYet": "No password yet? This form works for you too. You get two emails: the first one’s link sends the second, which confirms your address. Then you choose your password.",
         "emailExistsMessage": "There is already an account with this email address.",
     },
@@ -477,6 +483,7 @@ NO_PASSWORD_YET = {
         "spVerifyPasswordNext": "Nieuw account? Via de link kies je je wachtwoord.",
         "spNoPasswordYet": "Account aangemaakt maar nog geen wachtwoord?",
         "spGetNewLink": "Vraag een nieuwe link aan",
+        "spNewLinkTitle": "Een nieuwe link aanvragen",
         "spResetNoPasswordYet": "Nog geen wachtwoord? Ook dan gebruik je dit formulier. Je krijgt twee mails: de link in de eerste stuurt de tweede, die je adres bevestigt. Daarna kies je je wachtwoord.",
         "emailExistsMessage": "Er is al een account met dit e-mailadres.",
     },
@@ -485,8 +492,43 @@ NO_PASSWORD_YET = {
         "spVerifyPasswordNext": "Nový účet? Přes odkaz si zvolíš heslo.",
         "spNoPasswordYet": "Účet je vytvořený, ale heslo ještě nemáš?",
         "spGetNewLink": "Pošli mi nový odkaz",
+        "spNewLinkTitle": "Nový odkaz e-mailem",
         "spResetNoPasswordYet": "Ještě nemáš heslo? I tak použij tento formulář. Dostaneš dva e-maily: odkaz v prvním pošle druhý, který potvrdí tvou adresu. Pak si zvolíš heslo.",
         "emailExistsMessage": "S touto e-mailovou adresou už účet existuje.",
+    },
+}
+
+# The sign-up tab reloaded after the link was followed in another browser
+# (theme#60). Keycloak has dropped that tab's login by then and answers with
+# cookieNotFoundMessage, whose stock text blames cookies and points at a "Back
+# to Application" button this theme does not draw. error.ftl gives that one
+# error spStaleTabTitle and the button into the app. Keycloak also raises it
+# for blocked cookies and a login ended in another tab, and the page cannot
+# tell them apart: so the text says "log in" to everyone, then the sign-up
+# case, then cookies.
+# confirmEmailAddressVerification[Header] is Keycloak's extra "confirm" page
+# for a fresh link in a browser without the sign-up session (info.ftl), in
+# Keycloak's wording ("e-mail address validation") until now.
+# English, Dutch and Czech, like VERIFY_DEAD_END. cookieNotFoundMessage left
+# NL_JE for this set.
+STALE_TAB = {
+    "en": {
+        "spStaleTabTitle": "This page has expired",
+        "cookieNotFoundMessage": "This page is no longer active. Go to SoccerProject and log in there. Did you sign up and confirm your email in another browser or on your phone? Then your account is ready. If cookies are off in your browser, turn them on first.",
+        "confirmEmailAddressVerificationHeader": "Confirm your email",
+        "confirmEmailAddressVerification": "Confirm that {0} is your email address.",
+    },
+    "nl": {
+        "spStaleTabTitle": "Deze pagina is verlopen",
+        "cookieNotFoundMessage": "Deze pagina is niet meer actief. Ga naar SoccerProject en log daar in. Heb je je aangemeld en je e-mailadres bevestigd in een andere browser of op je telefoon? Dan is je account klaar. Staan cookies uit in je browser? Zet ze dan eerst aan.",
+        "confirmEmailAddressVerificationHeader": "Bevestig je e-mailadres",
+        "confirmEmailAddressVerification": "Bevestig dat {0} je e-mailadres is.",
+    },
+    "cs": {
+        "spStaleTabTitle": "Platnost této stránky vypršela",
+        "cookieNotFoundMessage": "Tato stránka už není aktivní. Přejdi do SoccerProject a přihlas se tam. Máš e-mail potvrzený v jiném prohlížeči nebo v telefonu? Pak je tvůj účet připravený. Pokud máš v prohlížeči vypnuté cookies, nejdřív je zapni.",
+        "confirmEmailAddressVerificationHeader": "Potvrď svůj e-mail",
+        "confirmEmailAddressVerification": "Potvrď, že {0} je tvoje e-mailová adresa.",
     },
 }
 
@@ -498,6 +540,7 @@ PARTIAL = [
     ("VERIFY_WAY_OUT", VERIFY_WAY_OUT, "Verify-email page: wrong address, start again (see VERIFY_WAY_OUT)."),
     ("VERIFY_DEAD_END", VERIFY_DEAD_END, "Verify link in a second browser: one button into the app (see VERIFY_DEAD_END)."),
     ("SET_PASSWORD", SET_PASSWORD, "The first password is chosen, not changed (see SET_PASSWORD)."),
+    ("STALE_TAB", STALE_TAB, "Sign-up tab reloaded after the link was used elsewhere (see STALE_TAB)."),
     ("NO_PASSWORD_YET", NO_PASSWORD_YET, "The account that never chose a password (see NO_PASSWORD_YET)."),
     ("PASSWORD_RULES", PASSWORD_RULES, "Password rules, all shown up front, singular and plural (see PASSWORD_RULES)."),
     ("NL_JE", NL_JE, "Keycloak keys re-worded from “u” to “je”, Dutch only (see NL_JE)."),

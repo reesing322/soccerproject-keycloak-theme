@@ -74,7 +74,7 @@
                     </#if>
                     <#if spNoPasswordHint>
                         <p id="sp-no-password" class="kc-helper-after">
-                            ${msg("spNoPasswordYet")} <a class="sp-link" href="${url.loginResetCredentialsUrl}">${msg("spGetNewLink")}</a>
+                            ${msg("spNoPasswordYet")} <a class="sp-link" href="${url.loginResetCredentialsUrl}" data-sp-reset="new-link" data-sp-reset-from="username">${msg("spGetNewLink")}</a>
                         </p>
                     </#if>
                 </div>
@@ -89,7 +89,7 @@
                         <span></span>
                     </#if>
                     <#if realm.resetPasswordAllowed>
-                        <a class="sp-link" href="${url.loginResetCredentialsUrl}">${msg("doForgotPassword")}</a>
+                        <a class="sp-link" href="${url.loginResetCredentialsUrl}" data-sp-reset="forgot" data-sp-reset-from="username">${msg("doForgotPassword")}</a>
                     </#if>
                 </div>
 

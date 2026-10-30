@@ -21,7 +21,8 @@
 
   Unchanged: the form id, `url.loginAction`, the `username` field name, the
   `messagesPerField` key and the attempted-username prefill. Only the order,
-  the button's label and the back link's wording differ.
+  the button's label and the back link's wording differ, and (theme#52) a
+  script carries the address and the title over from the link that led here.
 -->
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=true displayMessage=!messagesPerField.existsError('username'); section>
@@ -69,6 +70,27 @@
                  link does not confirm the address), so say so before they arrive. -->
             <p id="sp-reset-no-password" class="kc-helper-after">${msg("spResetNoPasswordYet")}</p>
         </form>
+
+        <#-- theme#52: "Get a new link" opened a page titled "Forgot your
+             password?", and the address typed a moment ago was gone. The link
+             left both in sessionStorage (template.ftl, "Into the reset page").
+             Keycloak's own prefill wins over ours. -->
+        <script>
+          (function () {
+            var sp;
+            // Read once: a later render of this page in the same tab (reload,
+            // Back) must not bring the old address back.
+            try {
+              sp = JSON.parse(sessionStorage.getItem('sp-reset') || 'null');
+              sessionStorage.removeItem('sp-reset');
+            } catch (e) { return; }
+            if (!sp) return;
+            var input = document.getElementById('username');
+            if (input && !input.value && sp.username) input.value = sp.username;
+            var title = document.querySelector('.sp-card__title');
+            if (title && sp.intent === 'new-link') title.textContent = '${msg("spNewLinkTitle")?js_string?no_esc}';
+          })();
+        </script>
 
     <#elseif section = "info">
         <div id="kc-reset-password-back">

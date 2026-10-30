@@ -112,7 +112,7 @@
                      email field, the same way out as on the login page. -->
                 <#if callback = "afterField" && attribute.name == "email" && spTaken>
                     <p id="sp-no-password" class="kc-helper-after">
-                        ${msg("spNoPasswordYet")} <a class="sp-link" href="${url.loginResetCredentialsUrl}">${msg("spGetNewLink")}</a>
+                        ${msg("spNoPasswordYet")} <a class="sp-link" href="${url.loginResetCredentialsUrl}" data-sp-reset="new-link" data-sp-reset-from="email">${msg("spGetNewLink")}</a>
                     </p>
                 </#if>
             </@userProfileCommons.userProfileFormFields>
