@@ -35,8 +35,9 @@
 <#assign spExpiredLink = spSummaryText == msg("expiredActionMessage") || spSummaryText == msg("expiredActionTokenNoSessionMessage")
   || spSummaryText == msg("expiredActionTokenSessionExistsMessage")>
 <#assign spResetUrl = url.loginResetCredentialsUrl>
-<#if !(client.clientId)?has_content || layout.spSystemClient()>
-  <#assign spResetUrl = spResetUrl?keep_before("?") + "?client_id=" + (properties.spAppClientId!"soccerproject-frontend")?url("UTF-8")>
+<#assign spAppClientId = properties.spAppClientId!"">
+<#if spAppClientId?has_content && (!(client.clientId)?has_content || layout.spSystemClient())>
+  <#assign spResetUrl = spResetUrl?keep_before("?") + "?client_id=" + spAppClientId?url("UTF-8")>
 </#if>
 <@layout.registrationLayout displayMessage=false spTitle=spStaleTab?then(msg("spStaleTabTitle"), ""); section>
     <#if section = "header">

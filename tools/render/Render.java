@@ -402,6 +402,11 @@ public class Render {
                                     "clientId", "account-console", "attributes", Map.of()),
                    "skipLink", true),
             Collections.<String>emptySet()});
+        // skipLink still hides the way on on any other info page.
+        cases.add(new Object[]{"info.ftl", "info-skip-link-other",
+            Map.of("auth", quietAuth, "message", Map.of("type", "info", "summary", "x"),
+                   "pageRedirectUri", appUrl + "after", "actionUri", "", "client", appClient, "skipLink", true),
+            Collections.<String>emptySet()});
         cases.add(new Object[]{"info.ftl", "info-skip-link",
             Map.of("auth", quietAuth, "message", Map.of("type", "success", "summary",
                        messages.getProperty("accountUpdatedMessage", "accountUpdatedMessage")),
@@ -475,6 +480,7 @@ public class Render {
         appButton.put("error-expired-action-account-console", new String[]{"backToApplication", siteUrl});
         appButton.put("info-page-redirect", new String[]{"sp-info-login", appUrl + "?verified=1"});
         appButton.put("info-account-ready-account-console", new String[]{"sp-info-login", siteUrl + "?verified=1"});
+        appButton.put("info-skip-link-other", new String[]{"sp-info-continue", ""});
         appButton.put("info-skip-link", new String[]{"sp-info-login", appUrl + "?verified=1"});
 
         // Choose-password page (theme#43): "sign out other devices" only where

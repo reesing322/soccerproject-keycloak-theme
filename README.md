@@ -25,7 +25,7 @@ it is the landing page's own composition, palette and type:
 | the puppet mark | `public/puppet-white.png`, byte-identical |
 
 When the landing page's handoff changes, change it there first and mirror it in
-`themes/soccerproject/login/resources/css/sp-login.v11.css`. Do not tune those
+`themes/soccerproject/login/resources/css/sp-login.v10.css`. Do not tune those
 values by eye.
 
 **No dark mode, and no theme toggle.** The landing page pins its palette and
@@ -249,7 +249,7 @@ and last names should give them a `pattern` that rejects those characters.
 
 Keycloak serves theme resources with a 30-day cache header and the URL does not
 change when a file's *content* does. After editing the CSS, rename it
-(`sp-login.v11.css` → `v12`) and update `styles=` in `login/theme.properties`.
+(`sp-login.v10.css` → `v11`) and update `styles=` in `login/theme.properties`.
 
 The favicons are cache-busted with a `?v=` query instead, because
 `template.ftl` writes those URLs itself — bump the four `?v=` in its `<head>`.

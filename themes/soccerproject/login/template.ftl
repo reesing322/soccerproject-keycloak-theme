@@ -332,6 +332,7 @@
         if (/test|qa|acc/.test(o)) return kind('test');
         if (/dev/.test(o)) return kind('dev');
         if (/local/.test(o)) return kind('local');
+        if (/^non-?prod(uction)?$/.test(o)) return kind('nonprod');
         return { kind: 'nonprod', label: '${msg("spEnvNamed", "§")?js_string?no_esc}'.replace('§', function () { return raw; }) };
       }
       if (prodHosts.indexOf(h) !== -1) return null;
